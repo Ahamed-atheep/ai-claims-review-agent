@@ -1,0 +1,27 @@
+===================================================================
+INSURANCE FRAUD CATALOG & ADVERSARIAL RED FLAG INDICATORS (FRD-CATALOG)
+===================================================================
+
+RULE FRD-001: TIMELINE INCONSISTENCY
+------------------------------------
+- Description: Repair estimates, tow receipts, or medical treatment invoices dated prior to the reported accident date.
+- Risk Score Impact: High (+40 points).
+- Action Required: Immediate verification of original timestamps and vendor receipts.
+
+RULE FRD-002: INFLATED & DUPLICATE REPAIR BILLING
+-------------------------------------------------
+- Description: Invoices listing duplicate labor charges, phantom parts, or parts costs 35%+ higher than regional OEM benchmarks.
+- Risk Score Impact: Critical (+50 points).
+- Action Required: Audit invoice against standard body shop labor guides.
+
+RULE FRD-003: HIGH-RISK VENDOR / SUSPICIOUS REPAIR SHOP
+--------------------------------------------------------
+- Description: Repair shop or medical provider previously flagged for kickback schemes, unbundled billing, or fake invoices.
+- Risk Score Impact: Critical (+45 points).
+- Action Required: Issue Special Investigation Unit (SIU) subpoena for shop records.
+
+RULE FRD-004: PHANTOM INJURIES & EXCESSIVE CHIROPRACTIC BILLING
+----------------------------------------------------------------
+- Description: Soft tissue injury claims with over 20 chiropractic sessions billed within 14 days of minor low-speed fender bender.
+- Risk Score Impact: Medium (+30 points).
+- Action Required: Peer medical review of treatment necessity.
