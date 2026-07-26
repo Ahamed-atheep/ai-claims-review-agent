@@ -2,6 +2,8 @@ from pydantic import BaseModel
 
 
 class UploadResponse(BaseModel):
+    success: bool
+    file_id: str
     filename: str
-    extracted_text: str
+    stored_path: str
     message: str

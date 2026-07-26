@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -5,6 +6,13 @@ class Settings(BaseSettings):
     APP_NAME: str = "AI Claims Review Backend"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def coerce_debug(cls, v: object) -> bool:
+        if isinstance(v, str):
+            return v.lower() in ("1", "true", "yes")
+        return bool(v)
 
     DATABASE_URL: str = "postgresql+psycopg2://user:password@localhost:5432/claims_db"
 
