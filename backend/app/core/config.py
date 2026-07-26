@@ -14,7 +14,13 @@ class Settings(BaseSettings):
             return v.lower() in ("1", "true", "yes")
         return bool(v)
 
-    DATABASE_URL: str = "postgresql+psycopg2://user:password@localhost:5432/claims_db"
+    # PostgreSQL — must use postgresql+asyncpg:// scheme
+    DATABASE_URL: str
+
+    # Supabase
+    SUPABASE_URL: str
+    SUPABASE_ANON_KEY: str
+    SUPABASE_SERVICE_ROLE_KEY: str
 
     UPLOAD_DIR: str = "uploads"
     MAX_UPLOAD_SIZE_MB: int = 10
