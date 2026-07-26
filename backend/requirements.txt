@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+psycopg2-binary
+python-dotenv
+python-multipart
+PyMuPDF
+easyocr
+pillow
+httpx
+pytest
+pytest-asyncio
