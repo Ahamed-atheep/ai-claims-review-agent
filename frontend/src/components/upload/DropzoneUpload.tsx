@@ -34,7 +34,7 @@ export const DropzoneUpload: React.FC<DropzoneUploadProps> = ({ onUploadSuccess 
   const [file, setFile] = useState<File | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  const onDrop = useCallback((accepted: File[], rejected: File[]) => {
+  const onDrop = useCallback((accepted: File[], rejected: any[]) => {
     if (rejected.length > 0) {
       setValidationError('Only PDF, PNG, or JPEG files are accepted.')
       return
@@ -99,7 +99,7 @@ export const DropzoneUpload: React.FC<DropzoneUploadProps> = ({ onUploadSuccess 
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden"
+      className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-2xl shadow-blue-300/30 overflow-hidden"
     >
       {/* Card Header */}
       <div className="bg-gradient-to-r from-[#1E1B4B] to-[#2563EB] px-6 py-5">
@@ -204,7 +204,7 @@ export const DropzoneUpload: React.FC<DropzoneUploadProps> = ({ onUploadSuccess 
             {!file ? (
               <motion.div
                 key="dropzone"
-                {...getRootProps()}
+                {...(getRootProps() as any)}
                 className={cn(
                   'relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200',
                   isDragActive

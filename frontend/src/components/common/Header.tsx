@@ -27,9 +27,9 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigateHome }) =
   if (currentPage === 'landing') {
     return (
       <motion.header 
-        initial={{ borderBottomColor: 'rgba(243, 244, 246, 0)' }}
-        animate={{ borderBottomColor: hasSeenIntro ? 'rgba(243, 244, 246, 1)' : 'rgba(243, 244, 246, 0)' }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-sm transition-colors duration-500"
+        initial={{ borderBottomColor: 'rgba(255,255,255,0)' }}
+        animate={{ borderBottomColor: hasSeenIntro ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0)' }}
+        className="fixed top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-md border-b border-white/30 transition-colors duration-500"
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between relative">
           {/* Logo - Uses layoutId to catch the logo flying from the center */}
@@ -63,25 +63,25 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigateHome }) =
                 <nav className="hidden md:flex items-center gap-6">
                   <button
                     onClick={() => document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                    className="text-sm text-gray-700 hover:text-gray-900 font-medium transition-colors"
                   >
                     Features
                   </button>
                   <button
                     onClick={() => document.getElementById('infrastructure-section')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                    className="text-sm text-gray-700 hover:text-gray-900 font-medium transition-colors"
                   >
                     Infrastructure
                   </button>
                 </nav>
 
                 <div className="flex items-center gap-3">
-                  <button className="text-sm text-gray-600 hover:text-gray-900 font-medium px-3 py-1.5 transition-colors">
+                  <button className="text-sm text-gray-700 hover:text-gray-900 font-medium px-3 py-1.5 transition-colors">
                     Sign In
                   </button>
                   <button 
                     onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="btn-dark text-sm px-5 py-2.5 rounded-full"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-full transition-all duration-150 shadow-lg shadow-blue-600/30 cursor-pointer select-none"
                   >
                     Submit Claim
                   </button>

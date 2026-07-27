@@ -78,9 +78,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
               risk_level: val.risk_level || 'MEDIUM',
               findings: val.findings || [],
               summary_reasoning: val.summary_reasoning || '',
-              flags: val.flags,
-              status: val.status,
-              score: val.score,
+              flags: (val as any).flags,
+              status: (val as any).status,
+              score: (val as any).score,
             },
           ])
         ),
@@ -97,7 +97,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] relative">
+    <div className="min-h-screen relative">
       
       {/* 0:00 - 0:02 Intro Animation (Centered Logo) */}
       {!hasSeenIntro && (
@@ -135,29 +135,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
         <>
           {/* Hero Section */}
           <div className="pt-24 pb-0 relative overflow-hidden">
-            {/* Stunning Framer Motion Abstract Background */}
+            {/* Subtle grid overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-              <motion.div 
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  x: [0, 50, 0],
-                  y: [0, 30, 0]
-                }}
-                transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-300/40 to-indigo-300/40 blur-[80px]"
-              />
-              <motion.div 
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  x: [0, -40, 0],
-                  y: [0, -50, 0]
-                }}
-                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-bl from-purple-300/30 to-blue-300/30 blur-[80px]"
-              />
-              
-              {/* Premium Animated Grid Lines */}
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(37,99,235,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.05)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_20%,#000_80%,transparent_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(96,165,250,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(96,165,250,0.06)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_20%,#000_80%,transparent_100%)]" />
             </div>
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -169,9 +149,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 20 }}
-                    className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6"
+                    className="inline-flex items-center gap-2 bg-white/40 border border-white/60 text-blue-800 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 backdrop-blur-sm shadow-sm"
                   >
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
                     Gemini 2.0 Pro · LangGraph · Pinecone RAG
                   </motion.div>
 
@@ -193,7 +173,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, type: "spring", stiffness: 200, damping: 20 }}
-                    className="mt-5 text-base text-gray-500 leading-relaxed max-w-md"
+                    className="mt-5 text-base text-gray-700 leading-relaxed max-w-md"
                   >
                     Upload insurance claim documents. Five specialized AI agents analyze fraud patterns,
                     medical records, document integrity, risk factors, and compliance — simultaneously,
@@ -209,7 +189,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                   >
                     <button
                       onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="btn-dark"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-full transition-all duration-150 shadow-lg shadow-blue-600/30 cursor-pointer select-none"
                       id="hero-cta-btn"
                     >
                       Analyze a Claim
@@ -222,10 +202,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                           const store = useClaimStore.getState()
                           store.setCurrentClaimId('CLM-2026-9901')
                         }}
-                        className="btn-secondary"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-full border border-white/20 backdrop-blur-sm transition-all duration-150 cursor-pointer select-none"
                         id="demo-btn"
                       >
-                        <Zap size={15} className="text-amber-500" />
+                        <Zap size={15} className="text-amber-400" />
                         Run Demo
                       </button>
                     )}
@@ -259,7 +239,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                             className="leading-none"
                           />
                         </div>
-                        <span className="text-xs text-gray-400 font-medium">{label}</span>
+                        <span className="text-xs text-gray-600 font-medium">{label}</span>
                       </motion.div>
                     ))}
                   </motion.div>
@@ -330,15 +310,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 1 }}
-            className="py-10 px-6 border-b border-gray-100"
+            className="py-10 px-6 border-b border-blue-900/10"
           >
             <div className="max-w-7xl mx-auto">
-              <p className="text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6">
+              <p className="text-center text-xs font-semibold text-blue-900/50 uppercase tracking-widest mb-6">
                 Powered by industry-leading AI infrastructure
               </p>
-              <div className="flex items-center justify-center gap-8 flex-wrap opacity-50 grayscale">
+              <div className="flex items-center justify-center gap-8 flex-wrap opacity-60">
                 {['Google Gemini', 'LangGraph', 'Pinecone', 'FastAPI', 'PostgreSQL'].map((tech) => (
-                  <span key={tech} className="text-sm font-bold text-gray-700">{tech}</span>
+                  <span key={tech} className="text-sm font-bold text-blue-900">{tech}</span>
                 ))}
               </div>
             </div>
