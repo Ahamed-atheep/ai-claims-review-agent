@@ -1,48 +1,37 @@
 import { create } from 'zustand'
 
-// ─── Types — Exact LLD Schema ────────────────────────────────────────
 export interface Finding {
-  category: string
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  description: string
-  evidence_quote: string
+  category?: string
+  severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | string
+  description?: string
+  evidence_quote?: string
   citation_id?: string
 }
 
-export interface AgentResult {
-  agent_name: string
-  risk_score: number
-  risk_level: string
-  findings: Finding[]
-  summary_reasoning: string
-  // Extended fields from shared API contract
-  flags?: string[]
-  status?: string
-  score?: number
+// ─── Exact Team API Contract Schema ──────────────────────────────────────
+export interface AgentAnalysisSection {
+  fraud_agent: {
+    score: number
+    flags: string[]
+  }
+  medical_agent: {
+    score: number
+    flags: string[]
+  }
+  compliance_agent: {
+    status: string
+  }
 }
 
 export interface ClaimReport {
   claim_id: string
   overall_risk_score: number
-  overall_risk_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  recommended_action: 'APPROVE' | 'REJECT' | 'ESCALATE_TO_INVESTIGATOR'
-  executive_summary: string
-  agents: Record<string, AgentResult>
+  risk_level: string
+  fraud_score: number
+  agent_analysis: AgentAnalysisSection
+  key_evidence: string[]
   investigator_questions: string[]
-  // From shared API contract
-  risk_level?: string
-  fraud_score?: number
-  agent_analysis?: Record<string, {
-    flags?: string[]
-    score?: number
-    status?: string
-    findings?: Finding[]
-    summary_reasoning?: string
-    agent_name?: string
-    risk_level?: string
-  }>
-  key_evidence?: string[]
-  final_recommendation?: string
+  final_recommendation: string
 }
 
 export interface SSEProgressEvent {
@@ -125,7 +114,7 @@ const INITIAL_STATE = {
   hasSeenIntro: false,
 }
 
-// ─── Store ────────────────────────────────────────────────────────────
+// ─── Store Implementation ────────────────────────────────────────────
 export const useClaimStore = create<ClaimStoreState>((set) => ({
   ...INITIAL_STATE,
 

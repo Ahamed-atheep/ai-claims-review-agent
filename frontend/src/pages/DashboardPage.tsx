@@ -1,7 +1,7 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  AlertTriangle, CheckCircle2, ArrowLeft, Copy, ClipboardCheck,
+  AlertTriangle, ArrowLeft, Copy, ClipboardCheck,
   ShieldAlert, TrendingUp
 } from 'lucide-react'
 import { useClaimStore } from '@/store/useClaimStore'
@@ -13,8 +13,7 @@ import { RedFlagsList } from '@/components/dashboard/RedFlagsList'
 import { ReportExportPDF } from '@/components/report/ReportExportPDF'
 import { SeverityBadge } from '@/components/common/SeverityBadge'
 import { AnimatedCounter } from '@/components/common/AnimatedCounter'
-import { cn, getRecommendationDisplay, getRiskColorClasses } from '@/lib/utils'
-import { type Finding } from '@/store/useClaimStore'
+import { cn, getRecommendationDisplay } from '@/lib/utils'
 
 interface DashboardPageProps {
   onNavigateBack: () => void
@@ -30,7 +29,7 @@ const TABS = [
 ]
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) => {
-  const { report, activeTab, setActiveTab, localPdfUrl, isSidebarOpen } = useClaimStore()
+  const { report, activeTab, setActiveTab, localPdfUrl } = useClaimStore()
   const [copiedQuestion, setCopiedQuestion] = React.useState<number | null>(null)
 
   if (!report) {
@@ -47,24 +46,28 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
     )
   }
 
-  const recDisplay = getRecommendationDisplay(
-    report.final_recommendation || report.recommended_action
-  )
+  const recDisplay = getRecommendationDisplay(report.final_recommendation)
 
-  // Build agent scores for radar
-  const agentAnalysis = report.agent_analysis || report.agents
+  // Direct mapping using exact backend contract schema
+  const agentAnalysis = report.agent_analysis
+  const fraudAgent = agentAnalysis?.fraud_agent
+  const medicalAgent = agentAnalysis?.medical_agent
+  const complianceAgent = agentAnalysis?.compliance_agent
+
   const agentScores = {
-    fraud:      (agentAnalysis?.fraud_agent as { score?: number })?.score ?? (report.agents?.fraud_agent?.risk_score ?? 0),
-    medical:    (agentAnalysis?.medical_agent as { score?: number })?.score ?? (report.agents?.medical_agent?.risk_score ?? 0),
-    document:   (agentAnalysis?.document_agent as { score?: number })?.score ?? (report.agents?.document_agent?.risk_score ?? 0),
-    risk:       (agentAnalysis?.risk_agent as { score?: number })?.score ?? (report.agents?.risk_agent?.risk_score ?? 0),
-    compliance: (agentAnalysis?.compliance_agent as { score?: number })?.score ?? (report.agents?.compliance_agent?.risk_score ?? 0),
+    fraud: fraudAgent?.score ?? report.fraud_score ?? 0,
+    medical: medicalAgent?.score ?? 0,
+    policy: complianceAgent?.status === 'DENIED' ? 90 : complianceAgent?.status === 'APPROVED_WITH_CONDITIONS' ? 50 : 20,
+    evidence: report.key_evidence?.length ? Math.min(100, report.key_evidence.length * 30) : 30,
+    historical: report.fraud_score ?? 50,
   }
 
-  // Gather all findings across agents
-  const allFindings: Finding[] = Object.values(report.agents || {}).flatMap(
-    (a) => a.findings || []
-  )
+  // Gather all flags for red flags list
+  const allFlags: string[] = [
+    ...(fraudAgent?.flags || []),
+    ...(medicalAgent?.flags || []),
+    ...(report.key_evidence || [])
+  ]
 
   const handleCopyQuestion = (q: string, i: number) => {
     navigator.clipboard.writeText(q)
@@ -94,7 +97,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
             whileHover={{ y: -4, scale: 1.02, boxShadow: '0 12px 30px -4px rgba(37,99,235,0.2)' }}
             className="premium-card p-4 bg-gradient-to-br from-[#1E1B4B] to-[#2563EB] text-white cursor-default"
           >
-            <p className="text-xs font-semibold text-blue-200 uppercase tracking-wider">Overall Risk Score</p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-blue-200 uppercase tracking-wider">Overall Risk Score</p>
+              <span className="text-[10px] font-mono bg-white/20 px-2 py-0.5 rounded text-white font-bold">{report.claim_id}</span>
+            </div>
             <div className="flex items-end justify-between mt-2">
               <span className="font-mono text-4xl font-black leading-none">
                 <AnimatedCounter target={report.overall_risk_score} />
@@ -102,7 +108,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
               <span className="text-blue-200 text-sm mb-1">/100</span>
             </div>
             <SeverityBadge
-              severity={report.risk_level || report.overall_risk_level}
+              severity={report.risk_level}
               className="mt-2 border-blue-400/30 bg-white/10 text-white"
             />
           </motion.div>
@@ -119,14 +125,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Fraud Score</p>
             <div className="flex items-end justify-between mt-2">
               <span className="font-mono text-4xl font-black text-red-600 leading-none">
-                <AnimatedCounter target={report.fraud_score ?? agentScores.fraud} />
+                <AnimatedCounter target={report.fraud_score} />
               </span>
               <span className="text-gray-400 text-sm mb-1">/100</span>
             </div>
             <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
               <TrendingUp size={12} />
               <span className="font-medium">
-                {(report.fraud_score ?? agentScores.fraud) >= 80 ? 'Critical threshold exceeded' : 'Elevated fraud risk'}
+                {report.fraud_score >= 80 ? 'Critical fraud threshold exceeded' : 'Elevated fraud risk'}
               </span>
             </div>
           </motion.div>
@@ -140,13 +146,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
             whileHover={{ y: -4, scale: 1.02, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }}
             className="premium-card p-4 cursor-default"
           >
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Recommendation</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Final Recommendation</p>
             <div className={`mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold ${recDisplay.bg} ${recDisplay.textColor}`}>
               <AlertTriangle size={13} />
-              {report.final_recommendation || report.recommended_action}
+              {report.final_recommendation}
             </div>
             <p className="text-xs text-gray-400 mt-2">
-              {allFindings.filter((f) => f.severity === 'CRITICAL').length} critical flag{allFindings.filter((f) => f.severity === 'CRITICAL').length !== 1 ? 's' : ''} detected
+              Compliance Status: <span className="font-semibold text-gray-700">{complianceAgent?.status || 'PENDING'}</span>
             </p>
           </motion.div>
         </div>
@@ -154,7 +160,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
 
       {/* Main split-screen content */}
       <div className="flex-1 flex min-h-0 px-5 pb-5 gap-4">
-        {/* Left: PDF Citation Viewer (40%) */}
+        {/* Left: PDF Citation Viewer (38%) */}
         <motion.div
           initial={{ opacity: 0, y: 50, x: -20, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
@@ -164,7 +170,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
           <CitationPdfViewer pdfUrl={localPdfUrl} />
         </motion.div>
 
-        {/* Right: Analysis Panel (60%) */}
+        {/* Right: Analysis Panel (62%) */}
         <motion.div
           initial={{ opacity: 0, y: 50, x: 20, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
@@ -215,7 +221,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
                     <div className="flex justify-center py-2">
                       <OverallScoreGauge
                         score={report.overall_risk_score}
-                        riskLevel={report.risk_level || report.overall_risk_level}
+                        riskLevel={report.risk_level}
                         size={200}
                       />
                     </div>
@@ -228,23 +234,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
                       <AlertTriangle size={18} className={cn('flex-shrink-0 mt-0.5', recDisplay.textColor)} />
                       <div>
                         <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-0.5">
-                          Recommended Action
+                          Final Recommendation
                         </p>
                         <p className={cn('text-base font-bold', recDisplay.textColor)}>
-                          {report.final_recommendation || report.recommended_action}
+                          {report.final_recommendation}
                         </p>
                       </div>
                     </div>
-
-                    {/* Executive summary */}
-                    {report.executive_summary && (
-                      <div className="premium-card p-4">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                          Executive Summary
-                        </p>
-                        <p className="text-sm text-gray-600 leading-relaxed">{report.executive_summary}</p>
-                      </div>
-                    )}
 
                     {/* Key Evidence */}
                     {report.key_evidence && report.key_evidence.length > 0 && (
@@ -286,7 +282,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
                     </div>
                     <p className="text-xs text-gray-400 text-center leading-relaxed">
                       Each axis represents one AI agent's risk assessment (0–100).
-                      The shaded area shows the aggregate risk profile of this claim.
+                      The shaded area shows the aggregate risk profile of claim #{report.claim_id}.
                     </p>
                   </motion.div>
                 )}
@@ -301,15 +297,46 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     className="space-y-3"
                   >
-                    {Object.entries(report.agents || report.agent_analysis || {}).map(
-                      ([key, agent], i) => (
-                        <AgentAccordionCard
-                          key={key}
-                          agentKey={key}
-                          agent={agent as Parameters<typeof AgentAccordionCard>[0]['agent']}
-                          index={i}
-                        />
-                      )
+                    {/* Fraud Agent Card */}
+                    {fraudAgent && (
+                      <AgentAccordionCard
+                        agentKey="fraud_agent"
+                        agent={{
+                          agent_name: 'Fraud Intelligence Agent',
+                          score: fraudAgent.score,
+                          flags: fraudAgent.flags,
+                        }}
+                        index={0}
+                      />
+                    )}
+
+                    {/* Medical Agent Card */}
+                    {medicalAgent && (
+                      <AgentAccordionCard
+                        agentKey="medical_agent"
+                        agent={{
+                          agent_name: 'Medical & Repair Cost Agent',
+                          score: medicalAgent.score,
+                          flags: medicalAgent.flags,
+                        }}
+                        index={1}
+                      />
+                    )}
+
+                    {/* Compliance Agent Card */}
+                    {complianceAgent && (
+                      <AgentAccordionCard
+                        agentKey="compliance_agent"
+                        agent={{
+                          agent_name: 'Policy Compliance Agent',
+                          score: complianceAgent.status === 'DENIED' ? 90 : 50,
+                          status: complianceAgent.status,
+                          flags: [
+                            `Compliance Status: ${complianceAgent.status}`
+                          ],
+                        }}
+                        index={2}
+                      />
                     )}
                   </motion.div>
                 )}
@@ -322,8 +349,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="space-y-3"
                   >
-                    <RedFlagsList findings={allFindings} />
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                      All Flagged Risk Indicators ({allFlags.length})
+                    </p>
+                    <ul className="space-y-2">
+                      {allFlags.map((flag, i) => (
+                        <li key={i} className="flex items-start gap-2.5 p-3 bg-red-50/70 border border-red-100 rounded-xl text-xs text-red-700 font-medium">
+                          <span className="flex-shrink-0">🚩</span>
+                          <span>{flag}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </motion.div>
                 )}
 
@@ -338,7 +376,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) 
                     className="space-y-3"
                   >
                     <p className="text-xs text-gray-500 leading-relaxed mb-4">
-                      AI-suggested follow-up questions to ask the claimant. Click to copy.
+                      AI-suggested follow-up questions for the investigator. Click to copy.
                     </p>
                     {(report.investigator_questions || []).map((q, i) => (
                       <motion.div

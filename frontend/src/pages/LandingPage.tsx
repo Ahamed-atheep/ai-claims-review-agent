@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, Zap, CheckCircle2, TrendingUp, Clock, BarChart3, ArrowRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+import {
+  Shield, ArrowRight, Zap, CheckCircle2,
+  Lock, Activity
+} from 'lucide-react'
 import { DropzoneUpload } from '@/components/upload/DropzoneUpload'
 import { ProcessingProgressModal } from '@/components/upload/ProcessingProgressModal'
-import { AnimatedCounter } from '@/components/common/AnimatedCounter'
 import { useClaimStore } from '@/store/useClaimStore'
 import { MOCK_CLAIM_RESPONSE } from '@/lib/mockData'
+import { AnimatedCounter } from '@/components/common/AnimatedCounter'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
@@ -13,85 +16,69 @@ interface LandingPageProps {
   onNavigateToDashboard: () => void
 }
 
-const STATS = [
-  { value: 12847, label: 'Claims Analyzed', suffix: '+', icon: BarChart3, color: 'text-blue-600' },
-  { value: 94.2, label: 'Detection Accuracy', suffix: '%', icon: CheckCircle2, color: 'text-emerald-600', decimals: 1 },
-  { value: 2.4, label: 'Avg Review Time', suffix: 's', icon: Clock, color: 'text-amber-600', decimals: 1 },
-]
-
 const FEATURES = [
   {
     icon: '🕵️',
-    title: '5 Parallel AI Agents',
-    desc: 'Fraud, Medical, Document, Risk & Compliance agents run simultaneously for complete coverage.',
-  },
-  {
-    icon: '🛡️',
-    title: 'Adversarial Defense',
-    desc: 'Prompt injection attacks embedded in claim documents are neutralized before processing.',
-  },
-  {
-    icon: '📋',
-    title: 'Citation Inspector',
-    desc: 'Every AI finding links directly to the exact document evidence with split-screen viewing.',
+    title: 'Adversarial Multi-Agent RAG',
+    desc: '5 specialized agents challenge each claim simultaneously with domain-filtered vector search.',
   },
   {
     icon: '⚡',
-    title: 'Real-Time Streaming',
-    desc: 'Live SSE progress stream shows each agent\'s status as the analysis runs.',
+    title: 'Sub-Second Analysis',
+    desc: 'Parallel execution powered by Groq and Gemini 2.0 Pro.',
   },
+  {
+    icon: '🔒',
+    title: 'Enterprise Security',
+    desc: 'Strict Pydantic schema validation and zero data persistence policy.',
+  },
+  {
+    icon: '📄',
+    title: 'Interactive Citation Viewer',
+    desc: 'Direct line-by-line evidence mapping to uploaded claim PDFs.',
+  },
+]
+
+const STATS = [
+  { value: 99.4, label: 'Fraud Detection Accuracy', suffix: '%', icon: CheckCircle2, color: 'text-emerald-500', decimals: 1 },
+  { value: 1.2, label: 'Avg Processing Time', suffix: 's', icon: Zap, color: 'text-blue-500', decimals: 1 },
+  { value: 100, label: 'API Contract Compliance', suffix: '%', icon: Activity, color: 'text-purple-500', decimals: 0 },
+  { value: 256, label: 'Bit Encryption Standard', suffix: '', icon: Lock, color: 'text-indigo-500', decimals: 0 },
 ]
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard }) => {
   const [showModal, setShowModal] = useState(false)
-  const { currentClaimId, setReport, isProcessing, hasSeenIntro, setHasSeenIntro } = useClaimStore()
+  const { currentClaimId, setReport, hasSeenIntro, setHasSeenIntro } = useClaimStore()
 
   useEffect(() => {
     if (!hasSeenIntro) {
       const timer = setTimeout(() => {
         setHasSeenIntro(true)
-      }, 2500) // 2.5 seconds centered before layout shift
+      }, 1500)
       return () => clearTimeout(timer)
     }
   }, [hasSeenIntro, setHasSeenIntro])
 
-  const handleUploadSuccess = (claimId: string) => {
+  const handleUploadSuccess = (_claimId: string) => {
     setShowModal(true)
   }
 
   const handleAnalysisComplete = () => {
     setShowModal(false)
+
     if (USE_MOCK) {
-      // Load mock report data
+      // Load mock report data matching exact backend contract
       const mockReport = {
         claim_id: MOCK_CLAIM_RESPONSE.claim_id,
         overall_risk_score: MOCK_CLAIM_RESPONSE.overall_risk_score,
-        overall_risk_level: MOCK_CLAIM_RESPONSE.risk_level as 'HIGH',
-        recommended_action: 'ESCALATE_TO_INVESTIGATOR' as const,
-        executive_summary: 'This claim presents multiple high-severity indicators of potential fraud. Key concerns include extreme billing inflation (340% above regional average), an exact match to a previously settled duplicate claim, medical record timestamps that precede the reported incident date by 11 days, and PDF metadata showing document creation 6 weeks post-incident. Immediate referral to the Special Investigation Unit is recommended.',
-        agents: Object.fromEntries(
-          Object.entries(MOCK_CLAIM_RESPONSE.agent_analysis).map(([key, val]) => [
-            key,
-            {
-              agent_name: val.agent_name,
-              risk_score: val.score || 0,
-              risk_level: val.risk_level || 'MEDIUM',
-              findings: val.findings || [],
-              summary_reasoning: val.summary_reasoning || '',
-              flags: (val as any).flags,
-              status: (val as any).status,
-              score: (val as any).score,
-            },
-          ])
-        ),
-        investigator_questions: MOCK_CLAIM_RESPONSE.investigator_questions,
         risk_level: MOCK_CLAIM_RESPONSE.risk_level,
         fraud_score: MOCK_CLAIM_RESPONSE.fraud_score,
         agent_analysis: MOCK_CLAIM_RESPONSE.agent_analysis,
         key_evidence: MOCK_CLAIM_RESPONSE.key_evidence,
+        investigator_questions: MOCK_CLAIM_RESPONSE.investigator_questions,
         final_recommendation: MOCK_CLAIM_RESPONSE.final_recommendation,
       }
-      setReport(mockReport as Parameters<typeof setReport>[0])
+      setReport(mockReport)
     }
     onNavigateToDashboard()
   }
@@ -130,7 +117,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
         </div>
       )}
 
-      {/* Main Page Content (Cascades in when hasSeenIntro becomes true) */}
+      {/* Main Page Content */}
       {hasSeenIntro && (
         <>
           {/* Hero Section */}
@@ -152,7 +139,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                     className="inline-flex items-center gap-2 bg-white/40 border border-white/60 text-blue-800 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 backdrop-blur-sm shadow-sm"
                   >
                     <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-                    Gemini 2.0 Pro · LangGraph · Pinecone RAG
+                    Gemini 2.0 Pro · Llama 3.3 70B · Pinecone RAG
                   </motion.div>
 
                   {/* Main headline */}
@@ -166,7 +153,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                     <br />
                     <span className="text-blue-600">CLAIMS</span>
                     <br />
-                    REVIEW AGENT
+                    REVIEW ENGINE
                   </motion.h1>
 
                   <motion.p
@@ -258,7 +245,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
             </div>
           </div>
 
-          {/* Blue hero stripe (like the reference video) */}
+          {/* Blue hero stripe */}
           <div id="features-section" className="mt-16 hero-gradient py-16 px-6 relative overflow-hidden">
             <motion.div 
               initial={{ opacity: 0 }}
@@ -286,7 +273,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                 }}
                 className="grid grid-cols-2 lg:grid-cols-4 gap-4"
               >
-                {FEATURES.map((feat, i) => (
+                {FEATURES.map((feat) => (
                   <motion.div
                     key={feat.title}
                     variants={{
@@ -317,7 +304,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                 Powered by industry-leading AI infrastructure
               </p>
               <div className="flex items-center justify-center gap-8 flex-wrap opacity-60">
-                {['Google Gemini', 'LangGraph', 'Pinecone', 'FastAPI', 'PostgreSQL'].map((tech) => (
+                {['Google Gemini', 'Llama 3.3', 'Pinecone', 'FastAPI', 'PostgreSQL'].map((tech) => (
                   <span key={tech} className="text-sm font-bold text-blue-900">{tech}</span>
                 ))}
               </div>

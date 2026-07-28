@@ -8,9 +8,12 @@ interface RiskRadarChartProps {
   agentScores: {
     fraud: number
     medical: number
-    document: number
-    risk: number
-    compliance: number
+    policy?: number
+    evidence?: number
+    historical?: number
+    document?: number
+    risk?: number
+    compliance?: number
   }
 }
 
@@ -30,17 +33,17 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<
 
 export const RiskRadarChart: React.FC<RiskRadarChartProps> = ({ agentScores }) => {
   const data = [
-    { subject: 'Fraud Pattern',     score: agentScores.fraud,      fullMark: 100 },
-    { subject: 'Medical Billing',   score: agentScores.medical,    fullMark: 100 },
-    { subject: 'Doc Integrity',     score: agentScores.document,   fullMark: 100 },
-    { subject: 'Underwriting Risk', score: agentScores.risk,       fullMark: 100 },
-    { subject: 'Compliance',        score: agentScores.compliance, fullMark: 100 },
+    { subject: 'Fraud Intelligence', score: agentScores.fraud ?? 0,      fullMark: 100 },
+    { subject: 'Medical & Repair',  score: agentScores.medical ?? 0,    fullMark: 100 },
+    { subject: 'Policy Compliance', score: agentScores.policy ?? agentScores.compliance ?? 0, fullMark: 100 },
+    { subject: 'Evidence Verification', score: agentScores.evidence ?? agentScores.document ?? 0, fullMark: 100 },
+    { subject: 'Historical Patterns', score: agentScores.historical ?? agentScores.risk ?? 0, fullMark: 100 },
   ]
 
   return (
     <div className="w-full flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">5-Axis Risk Vector Analysis</h3>
+        <h3 className="text-sm font-semibold text-gray-700">5-Agent Multi-Domain Risk Vector Analysis</h3>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-red-400/60 border border-red-400" />
           <span className="text-xs text-gray-500">Risk Level</span>
@@ -85,7 +88,7 @@ export const RiskRadarChart: React.FC<RiskRadarChartProps> = ({ agentScores }) =
           return (
             <div key={d.subject} className={`flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-lg border ${color}`}>
               <span className="font-mono text-base font-bold leading-none">{d.score}</span>
-              <span className="text-[9px] font-semibold uppercase text-center leading-tight opacity-75 truncate w-full text-center">
+              <span className="text-[9px] font-semibold uppercase text-center leading-tight opacity-75 truncate w-full">
                 {d.subject.split(' ')[0]}
               </span>
             </div>

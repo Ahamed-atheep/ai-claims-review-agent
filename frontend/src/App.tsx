@@ -18,7 +18,7 @@ function App() {
       agentStatus = "error";
     }
   } else if (report) {
-    const risk = report.risk_level || report.overall_risk_level;
+    const risk = report.risk_level;
     if (risk === "CRITICAL") agentStatus = "error";
     else if (risk === "HIGH" || risk === "MEDIUM") agentStatus = "warning";
     else agentStatus = "success";
