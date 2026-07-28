@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add parent directory to sys.path so 'ai_engine' module imports resolve seamlessly
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

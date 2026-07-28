@@ -5,7 +5,6 @@ from langchain.docstore.document import Document
 from ai_engine.rag.vector_store import get_vector_store
 from ai_engine.utils.logger import logger
 
-# File mapping to domains
 KNOWLEDGE_FILES_MAP: Dict[str, str] = {
     "auto_insurance_policy_master.txt": "policy",
     "insurance_fraud_indicators_master.txt": "fraud",
@@ -15,7 +14,6 @@ KNOWLEDGE_FILES_MAP: Dict[str, str] = {
 DEFAULT_KNOWLEDGE_DIR = os.path.join(os.path.dirname(__file__), "..", "knowledge_base")
 
 def load_and_tag_documents(knowledge_dir: str = DEFAULT_KNOWLEDGE_DIR) -> List[Document]:
-    """Reads knowledge base files and tags chunks with metadata domain."""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=600,
         chunk_overlap=100
@@ -39,11 +37,10 @@ def load_and_tag_documents(knowledge_dir: str = DEFAULT_KNOWLEDGE_DIR) -> List[D
             )
             chunks = text_splitter.split_documents([raw_doc])
             for chunk in chunks:
-                chunk.metadata["domain"] = domain  # Ensure domain metadata tag on every chunk
+                chunk.metadata["domain"] = domain
             documents.extend(chunks)
             logger.info(f"Generated {len(chunks)} chunks for domain='{domain}'")
 
-    # Add default evidence and historical synthetic entries if missing
     synthetic_entries = [
         Document(
             page_content="EVIDENCE RULES: Police reports are mandatory for claims over $3,000. Tow receipts must match accident timestamp. Photo evidence of vehicle damage must show VIN number.",
@@ -61,7 +58,6 @@ def load_and_tag_documents(knowledge_dir: str = DEFAULT_KNOWLEDGE_DIR) -> List[D
     return documents
 
 def ingest_to_pinecone():
-    """Ingests tagged chunks into Pinecone index 'insurance-knowledge-base'."""
     docs = load_and_tag_documents()
     if not docs:
         logger.warning("No documents loaded for ingestion.")

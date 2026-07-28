@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Ensure parent directory is in sys.path so 'ai_engine' module can be imported from any location
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import asyncio
 import json
 from ai_engine.models.request_model import ClaimAnalysisRequest

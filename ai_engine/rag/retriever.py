@@ -1,7 +1,9 @@
 from ai_engine.rag.vector_store import get_vector_store
+from ai_engine.rag.embeddings import get_embeddings
+from ai_engine.config import config
 from ai_engine.utils.logger import logger
 
-# Fallback in-memory domain knowledge for local testing/dev
+# Fallback in-memory domain knowledge for local testing if Pinecone credentials not configured
 FALLBACK_DOMAIN_KNOWLEDGE = {
     "fraud": "Rule FRD-101: Repair estimate or medical invoice dated prior to reported accident date. Rule FRD-102: Duplicate billing and phantom parts. Rule FRD-103: Ghost repair shops.",
     "medical": "Body shop labor rate regional benchmark: $65-$95/hr standard. Over $125/hr flagged as inflated. CPT 99283 ER Visit $350-$750 benchmark, CPT 72125 CT Scan $400-$950.",
@@ -10,34 +12,49 @@ FALLBACK_DOMAIN_KNOWLEDGE = {
     "historical": "Historical Fraud Database: Flagged high-risk vendors include Apex Collision Center and Quick Care Clinic. Repeat claimants filing >3 claims in 12 months referred to SIU."
 }
 
-def get_domain_retriever(domain: str, top_k: int = 3):
-    """Returns a retriever configured with metadata domain filtering."""
-    try:
-        vector_store = get_vector_store()
-        if not vector_store:
-            return None
-        return vector_store.as_retriever(
-            search_kwargs={"k": top_k, "filter": {"domain": domain}}
-        )
-    except Exception as e:
-        logger.warning(f"Unable to connect vector store retriever for domain='{domain}': {e}")
-        return None
-
 def retrieve_domain_context(domain: str, query: str, top_k: int = 3) -> str:
     """
-    Step 5-7 of RAG Flow: Embeds query, retrieves domain-tagged vector chunks from Pinecone, 
-    and returns context text to be combined with System Prompt for LLM inference.
+    RAG Retrieval Pipeline (Steps 5 to 7 in Architecture Flow):
+    1. Embeds claim query text.
+    2. Queries Pinecone vector index filtered by metadata domain (`domain=domain`).
+    3. Retrieves exact vector chunks and formats context for LLM inference.
     """
     try:
-        vector_store = get_vector_store()
-        if vector_store:
-            docs = vector_store.similarity_search(query, k=top_k, filter={"domain": domain})
+        store = get_vector_store()
+        
+        # Scenario A: LangChain VectorStore object
+        if store and hasattr(store, "similarity_search"):
+            docs = store.similarity_search(query, k=top_k, filter={"domain": domain})
             if docs:
-                logger.info(f"Retrieved {len(docs)} chunks from Pinecone for domain='{domain}'")
+                logger.info(f"Retrieved {len(docs)} real chunks from Pinecone for domain='{domain}'")
                 return "\n---\n".join([d.page_content for d in docs])
-    except Exception as e:
-        logger.warning(f"Pinecone search error for domain='{domain}': {e}")
 
-    # Fallback knowledge return matching RAG step 7
-    logger.info(f"Using domain knowledge fallback for domain='{domain}'")
+        # Scenario B: Native Pinecone Index object
+        elif store and hasattr(store, "query"):
+            embeddings = get_embeddings()
+            query_vector = embeddings.embed_query(query)
+            
+            res = store.query(
+                vector=query_vector,
+                top_k=top_k,
+                filter={"domain": domain},
+                include_metadata=True
+            )
+            matches = res.get("matches", []) if hasattr(res, "get") else getattr(res, "matches", [])
+            chunks = []
+            for match in matches:
+                meta = match.get("metadata", {}) if hasattr(match, "get") else getattr(match, "metadata", {})
+                text = meta.get("text") or meta.get("content") or meta.get("page_content")
+                if text:
+                    chunks.append(text)
+            
+            if chunks:
+                logger.info(f"Retrieved {len(chunks)} real vector chunks from Pinecone for domain='{domain}'")
+                return "\n---\n".join(chunks)
+
+    except Exception as e:
+        logger.warning(f"Pinecone vector search attempt for domain='{domain}': {e}")
+
+    # Heuristic domain knowledge fallback if Pinecone index is empty / unconfigured
+    logger.info(f"Using domain knowledge context for domain='{domain}'")
     return FALLBACK_DOMAIN_KNOWLEDGE.get(domain, "Standard policy rules and fraud benchmarks.")
