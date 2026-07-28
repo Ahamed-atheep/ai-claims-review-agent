@@ -1,0 +1,18 @@
+===================================================================
+STANDARD MEDICAL & AUTO REPAIR COST BENCHMARKS (BENCH-2026)
+===================================================================
+
+SECTION 1: AUTO REPAIR COST BENCHMARKS
+---------------------------------------
+1. Standard Body Shop Labor Rate: $65.00 - $95.00 per hour.
+2. Paint & Refinish Rate: $55.00 - $80.00 per hour.
+3. Bumper Cover Replacement (Standard Sedan): $450 - $900 total (Parts + Labor).
+4. Guardrail / Front End Collision Repair Average: $3,500 - $7,500.
+5. Invoices exceeding $10,000 for single-vehicle minor collision trigger mandatory audit.
+
+SECTION 2: MEDICAL BILLING BENCHMARKS (CPT CODES)
+--------------------------------------------------
+1. CPT 99283 (Emergency Dept Visit - Moderate Severity): Benchmark $350 - $750.
+2. CPT 72125 (CT Scan Cervical Spine): Benchmark $400 - $950.
+3. CPT 97110 (Physical Therapy / Exercise - 15 mins): Benchmark $45 - $85 per session.
+4. Total chiropractic claims for minor whiplash exceeding $3,000 trigger medical review.

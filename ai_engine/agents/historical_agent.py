@@ -1,17 +1,17 @@
 from typing import Dict, Any
 from ai_engine.agents.base_agent import BaseAgent
-from ai_engine.models.agent_models import MedicalAgentOutput
+from ai_engine.models.agent_models import HistoricalAgentOutput
 from ai_engine.rag.retriever import retrieve_domain_context
 from ai_engine.utils.logger import logger
 
-class MedicalAgent(BaseAgent):
-    """Medical & Repair Cost Agent (domain=medical)."""
+class HistoricalAgent(BaseAgent):
+    """Historical Intelligence Agent (domain=historical)."""
 
     def __init__(self):
         super().__init__(
-            name="Medical & Repair Cost Agent",
-            domain="medical",
-            prompt_file="medical.txt"
+            name="Historical Intelligence Agent",
+            domain="historical",
+            prompt_file="historical.txt"
         )
 
     async def analyze(self, claim_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -34,32 +34,19 @@ class MedicalAgent(BaseAgent):
 
         response = await self.llm.ainvoke(prompt_str)
         raw_text = response.content if hasattr(response, "content") else str(response)
-        logger.info("LLM reasoning completed for Medical Agent")
+        logger.info("LLM reasoning completed for Historical Agent")
 
         parsed = self._parse_json_response(raw_text)
 
-        score = parsed.get("score", 0)
-        flags = parsed.get("flags", [])
+        similarity_score = parsed.get("similarity_score", 45)
+        matched_patterns = parsed.get("matched_patterns", [])
         reasoning = parsed.get("reasoning", "")
-        evidence = parsed.get("evidence", [])
 
-        # Heuristic fallback check
-        extracted = claim_data.get("extracted_text", "").lower()
-        if "125" in extracted or "labor rate" in extracted or "inflated" in extracted:
-            if "Labor rate exceeds regional benchmark" not in flags:
-                flags.append("Labor rate exceeds regional benchmark")
-            score = max(score, 60)
-            if not reasoning:
-                reasoning = "Billed body shop labor rate of $125/hr exceeds regional $85/hr benchmark."
-            if not evidence:
-                evidence = ["Body shop labor rate ($125/hr) exceeds regional benchmark ($85/hr)."]
-
-        output = MedicalAgentOutput(
-            score=score,
-            flags=flags,
-            reasoning=reasoning,
-            evidence=evidence
+        output = HistoricalAgentOutput(
+            similarity_score=similarity_score,
+            matched_patterns=matched_patterns,
+            reasoning=reasoning
         )
 
-        logger.info("Medical Agent finished")
+        logger.info("Historical Agent finished")
         return output.model_dump()

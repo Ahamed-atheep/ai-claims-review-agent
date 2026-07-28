@@ -1,0 +1,42 @@
+================================================================================
+NATIONAL INSURANCE CRIME & ADVERSARIAL FRAUD INDICATORS CATALOG (MASTER FRD-2026)
+================================================================================
+
+SECTION 1: TIMELINE & DOCUMENT ANOMALIES
+----------------------------------------
+- RULE FRD-101: Pre-Accident Estimate Date
+  * Description: Repair estimates, tow receipts, or medical treatment invoices dated prior to the reported accident date.
+  * Severity: CRITICAL (+50 Risk Points).
+  * Flag Trigger: Invoice date < Accident date.
+
+- RULE FRD-102: Delayed Reporting & Sudden Claim Exaggeration
+  * Description: Claim reported on day 29 or 30 with initial minor estimate ($800) suddenly increasing 10x ($8,000+) without additional physical inspection.
+  * Severity: HIGH (+35 Risk Points).
+
+- RULE FRD-103: Single-Vehicle Guardrail / Fixed Object Collision
+  * Description: Single-vehicle collision with fixed object (guardrail, tree, wall) occurring late at night with no witnesses and no police report.
+  * Severity: MEDIUM (+25 Risk Points).
+
+SECTION 2: REPAIR INVOICE & AUTO BODY FRAUD PATTERNS
+----------------------------------------------------
+- RULE FRD-104: Inflated Labor Hours & Phantom Parts
+  * Description: Auto repair shop charging for OEM new replacement parts while installing reconditioned/used parts, or charging labor hours 35% above Mitchell/Audatex cost benchmarks.
+  * Severity: HIGH (+40 Risk Points).
+
+- RULE FRD-105: Duplicate Invoice & Recycled Claims
+  * Description: Identical damage photos or repair line-items submitted across multiple claim numbers or different insurance carriers.
+  * Severity: CRITICAL (+50 Risk Points).
+
+- RULE FRD-106: High-Risk Unaffiliated Repair Shop
+  * Description: Vehicle towed to an out-of-network repair shop previously flagged for kickbacks, staged accidents, or storage fee gouging.
+  * Severity: HIGH (+40 Risk Points).
+
+SECTION 3: MEDICAL BILLING & INJURY FRAUD PATTERNS
+--------------------------------------------------
+- RULE FRD-107: Excessive Chiropractic & Physical Therapy Billing
+  * Description: Over 25 chiropractic sessions billed for minor low-speed rear-end collision under 10 mph.
+  * Severity: HIGH (+35 Risk Points).
+
+- RULE FRD-108: Unbundled Billing & CPT Code Upcoding
+  * Description: Medical provider billing CPT 99285 (High Complexity ER) for routine minor checkup, or unbundling standard physical therapy procedures.
+  * Severity: HIGH (+40 Risk Points).
