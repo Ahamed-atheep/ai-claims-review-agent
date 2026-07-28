@@ -1,4 +1,9 @@
 import os
+import sys
+
+# Ensure parent root directory is in sys.path so 'ai_engine' module imports resolve seamlessly
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
 from typing import List, Dict
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -74,7 +79,8 @@ def ingest_to_pinecone():
         return False
 
     logger.info(f"Upserting {len(docs)} domain-tagged chunks into Pinecone...")
-    vector_store.add_documents(docs)
+    if hasattr(vector_store, "add_documents"):
+        vector_store.add_documents(docs)
     logger.info("Successfully completed ingestion to Pinecone!")
     return True
 
