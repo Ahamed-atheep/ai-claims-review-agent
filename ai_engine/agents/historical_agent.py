@@ -15,13 +15,13 @@ class HistoricalAgent(BaseAgent):
         )
 
     async def analyze(self, claim_data: Dict[str, Any]) -> Dict[str, Any]:
-        logger.info(f"[{self.name}] Running domain='{self.domain}' retrieval and analysis...")
-        
+        logger.info(f"Metadata filter domain={self.domain}")
         query = f"{claim_data.get('claim_type', '')} {claim_data.get('extracted_text', '')}"
-        context = retrieve_domain_context(domain=self.domain, query=query, top_k=3)
-        if not context:
-            context = "Historical Fraud Database: Repeat claimant patterns, flagged garages and clinics."
+        
+        # Step 1-3: Retrieve domain chunks from Pinecone (Top K = 5)
+        context = retrieve_domain_context(domain=self.domain, query=query, top_k=5)
 
+        # Step 4: Prompt LLM with Claim + RAG Context
         prompt_str = self.prompt_template.format(
             context=context,
             claim_id=claim_data.get("claim_id", ""),
@@ -34,14 +34,19 @@ class HistoricalAgent(BaseAgent):
 
         response = await self.llm.ainvoke(prompt_str)
         raw_text = response.content if hasattr(response, "content") else str(response)
+        logger.info("LLM reasoning completed for Historical Agent")
+
         parsed = self._parse_json_response(raw_text)
 
         similarity_score = parsed.get("similarity_score", 45)
         matched_patterns = parsed.get("matched_patterns", [])
+        reasoning = parsed.get("reasoning", "")
 
         output = HistoricalAgentOutput(
             similarity_score=similarity_score,
-            matched_patterns=matched_patterns
+            matched_patterns=matched_patterns,
+            reasoning=reasoning
         )
-        logger.info(f"[{self.name}] Result: similarity_score={output.similarity_score}")
+
+        logger.info("Historical Agent finished")
         return output.model_dump()

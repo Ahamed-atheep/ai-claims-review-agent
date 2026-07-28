@@ -47,7 +47,6 @@ class MasterSynthesisAgent:
 
         parsed_json = self._parse_json(raw_text)
 
-        # Fallback & schema compliance construction
         fraud_score = parsed_json.get("fraud_score", fraud_out.get("score", 82))
         overall_risk_score = parsed_json.get("overall_risk_score", int(fraud_score * 0.6 + medical_out.get("score", 60) * 0.4))
         
@@ -60,7 +59,7 @@ class MasterSynthesisAgent:
             else:
                 risk_level = "LOW"
 
-        # Construct exact contract agent_analysis
+        # Construct exact contract agent_analysis matching requested schema
         agent_analysis = AgentAnalysisSection(
             fraud_agent={
                 "flags": fraud_out.get("flags", ["Duplicate invoice"]),
@@ -84,8 +83,7 @@ class MasterSynthesisAgent:
         investigator_questions = parsed_json.get("investigator_questions")
         if not investigator_questions:
             investigator_questions = [
-                "Can claimant provide verified tow receipts?",
-                "Why was repair estimate prepared prior to accident date?"
+                "Can claimant provide verified tow receipts?"
             ]
 
         final_recommendation = parsed_json.get("final_recommendation")

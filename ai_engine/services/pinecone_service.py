@@ -1,17 +1,17 @@
-from pinecone import Pinecone
 from ai_engine.config import config
 from ai_engine.utils.logger import logger
 
 def get_pinecone_client():
-    """Initializes and returns Pinecone client connection."""
-    if not config.PINECONE_API_KEY:
-        logger.warning("PINECONE_API_KEY is not set in config.")
+    """Initializes and returns Pinecone client connection safely."""
+    if not config.PINECONE_API_KEY or config.PINECONE_API_KEY == "your_pinecone_api_key_here":
         return None
     try:
-        pc = Pinecone(api_key=config.PINECONE_API_KEY)
-        return pc
+        import pinecone
+        if hasattr(pinecone, "Pinecone"):
+            pc = pinecone.Pinecone(api_key=config.PINECONE_API_KEY)
+            return pc
     except Exception as e:
-        logger.error(f"Failed to initialize Pinecone client: {e}")
+        logger.warning(f"Pinecone client init error: {e}")
         return None
 
 def get_pinecone_index():
@@ -19,9 +19,8 @@ def get_pinecone_index():
     pc = get_pinecone_client()
     if pc:
         try:
-            index = pc.Index(config.PINECONE_INDEX_NAME)
-            return index
+            return pc.Index(config.PINECONE_INDEX_NAME)
         except Exception as e:
-            logger.error(f"Failed to connect to Pinecone index {config.PINECONE_INDEX_NAME}: {e}")
+            logger.warning(f"Pinecone index connection error: {e}")
             return None
     return None
