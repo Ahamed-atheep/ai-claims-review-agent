@@ -67,7 +67,7 @@ class KnowledgeIngester:
 
         if config.PINECONE_API_KEY and config.GEMINI_API_KEY and config.PINECONE_API_KEY != "your_pinecone_api_key_here":
             try:
-                import google.generativeai as genai
+                import google.genai as genai
                 from pinecone import Pinecone, ServerlessSpec
                 
                 genai.configure(api_key=config.GEMINI_API_KEY)
