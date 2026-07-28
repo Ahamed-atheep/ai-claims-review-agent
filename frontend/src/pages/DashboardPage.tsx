@@ -2,7 +2,7 @@ import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle, ArrowLeft, Copy, ClipboardCheck,
-  ShieldAlert, TrendingUp
+  ShieldAlert, TrendingUp, Zap, FolderOpen, Upload
 } from 'lucide-react'
 import { useClaimStore } from '@/store/useClaimStore'
 import { CitationPdfViewer } from '@/components/dashboard/CitationPdfViewer'
@@ -14,6 +14,9 @@ import { ReportExportPDF } from '@/components/report/ReportExportPDF'
 import { SeverityBadge } from '@/components/common/SeverityBadge'
 import { AnimatedCounter } from '@/components/common/AnimatedCounter'
 import { cn, getRecommendationDisplay } from '@/lib/utils'
+import { DropzoneUpload } from '@/components/upload/DropzoneUpload'
+import { ProcessingProgressModal } from '@/components/upload/ProcessingProgressModal'
+import { SAMPLE_CLAIMS } from '@/lib/mockData'
 
 interface DashboardPageProps {
   onNavigateBack: () => void
@@ -29,19 +32,86 @@ const TABS = [
 ]
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateBack }) => {
-  const { report, activeTab, setActiveTab, localPdfUrl } = useClaimStore()
+  const { report, setReport, activeTab, setActiveTab, localPdfUrl, setActiveNav } = useClaimStore()
   const [copiedQuestion, setCopiedQuestion] = React.useState<number | null>(null)
+  const [processingClaimId, setProcessingClaimId] = React.useState<string | null>(null)
 
   if (!report) {
     return (
-      <div className="flex-1 flex items-center justify-center h-full">
-        <div className="text-center space-y-3">
-          <ShieldAlert size={48} className="text-gray-300 mx-auto" />
-          <p className="text-gray-500 font-medium">No analysis report loaded.</p>
-          <button onClick={onNavigateBack} className="btn-primary text-sm">
-            <ArrowLeft size={15} /> Submit a Claim
-          </button>
+      <div className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">
+        {/* Welcome Header Banner */}
+        <div className="bg-gradient-to-r from-[#1E1B4B] to-[#2563EB] p-6 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">
+              <ShieldAlert size={16} />
+              <span>SIU Review Workspace</span>
+            </div>
+            <h1 className="text-2xl font-black tracking-tight">No Active Claim Loaded</h1>
+            <p className="text-blue-100 text-sm mt-1">
+              Upload a claim document below or select a pre-analyzed sample claim to view the AI risk scorecard.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveNav('claims')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl backdrop-blur-sm transition-all border border-white/20 cursor-pointer select-none"
+            >
+              <FolderOpen size={14} />
+              Claims History
+            </button>
+          </div>
         </div>
+
+        {/* Workspace Grid: Dropzone & Sample Claims */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Embedded Upload Dropzone (7 cols) */}
+          <div className="lg:col-span-7">
+            <DropzoneUpload onUploadSuccess={(id) => setProcessingClaimId(id)} />
+          </div>
+
+          {/* Right: Quick Load Sample Claims (5 cols) */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-1 flex items-center gap-2">
+                <Zap size={16} className="text-amber-500" />
+                Quick Load Sample Claims
+              </h2>
+              <p className="text-xs text-gray-400 mb-4">
+                Click any sample claim below to instantly load its multi-agent risk report & evidence citations.
+              </p>
+
+              <div className="space-y-3">
+                {SAMPLE_CLAIMS.slice(0, 3).map((claim) => (
+                  <motion.div
+                    key={claim.claim_id}
+                    whileHover={{ scale: 1.01, x: 2 }}
+                    onClick={() => setReport(claim.report)}
+                    className="p-3.5 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-blue-50/50 hover:border-blue-200 cursor-pointer transition-all flex items-center justify-between group"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-blue-600">{claim.claim_id}</span>
+                        <SeverityBadge severity={claim.risk_level} />
+                      </div>
+                      <p className="text-xs font-bold text-gray-800 mt-1">{claim.claim_type}</p>
+                      <p className="text-[11px] text-gray-400">{claim.claimant_name} • ${claim.claimed_amount.toLocaleString()}</p>
+                    </div>
+
+                    <span className="text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                      Analyze <Zap size={12} className="text-amber-500" />
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ProcessingProgressModal
+          claimId={processingClaimId}
+          isOpen={Boolean(processingClaimId)}
+          onComplete={() => setProcessingClaimId(null)}
+        />
       </div>
     )
   }

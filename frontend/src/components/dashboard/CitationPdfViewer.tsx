@@ -3,15 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { useClaimStore } from '@/store/useClaimStore'
-import { cn } from '@/lib/utils'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 
-// Configure pdf.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString()
+// Configure pdf.js worker using unpkg CDN matching pdfjs version for reliable Vite loading
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
 interface CitationPdfViewerProps {
   pdfUrl: string | null
@@ -23,6 +19,9 @@ export const CitationPdfViewer: React.FC<CitationPdfViewerProps> = ({ pdfUrl }) 
   const [pageNumber, setPageNumber] = useState(1)
   const [scale, setScale] = useState(1.0)
   const [loadError, setLoadError] = useState(false)
+
+  // Use local PDF URL or default sample PDF URL
+  const activePdfUrl = pdfUrl || '/Sample_Auto_Claim_CLM_2026_9901.pdf'
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages)
@@ -83,10 +82,8 @@ export const CitationPdfViewer: React.FC<CitationPdfViewerProps> = ({ pdfUrl }) 
 
       {/* PDF Content */}
       <div className="flex-1 overflow-auto bg-gray-50 relative" id="pdf-viewer-content">
-        {!pdfUrl ? (
-          <NoPdfPlaceholder />
-        ) : loadError ? (
-          <PdfErrorState />
+        {loadError ? (
+          <PdfErrorState activePdfUrl={activePdfUrl} />
         ) : (
           <div className="flex flex-col items-center py-4 px-2 min-h-full">
             {selectedCitation && (
@@ -98,19 +95,19 @@ export const CitationPdfViewer: React.FC<CitationPdfViewerProps> = ({ pdfUrl }) 
                 <AlertCircle size={13} className="flex-shrink-0" />
                 <span>
                   Viewing evidence for citation{' '}
-                  <strong className="font-mono">{selectedCitation}</strong> — scroll to highlighted section
+                  <strong className="font-mono">{selectedCitation}</strong>
                 </span>
               </motion.div>
             )}
 
             <Document
-              file={pdfUrl}
+              file={activePdfUrl}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               loading={
                 <div className="flex flex-col items-center gap-3 py-16">
                   <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-xs text-gray-400">Loading document...</p>
+                  <p className="text-xs text-gray-400">Loading document PDF...</p>
                 </div>
               }
             >
@@ -154,26 +151,24 @@ export const CitationPdfViewer: React.FC<CitationPdfViewerProps> = ({ pdfUrl }) 
   )
 }
 
-const NoPdfPlaceholder: React.FC = () => (
-  <div className="flex flex-col items-center justify-center h-full gap-4 py-16">
-    <div className="w-16 h-16 bg-gray-100 rounded-3xl flex items-center justify-center">
-      <FileText size={28} className="text-gray-300" />
+const PdfErrorState: React.FC<{ activePdfUrl: string }> = ({ activePdfUrl }) => (
+  <div className="flex flex-col items-center justify-center h-full gap-4 py-16 px-4">
+    <div className="w-16 h-16 bg-blue-50 rounded-3xl flex items-center justify-center">
+      <FileText size={28} className="text-blue-500" />
     </div>
-    <div className="text-center">
-      <p className="text-sm font-semibold text-gray-500">No document loaded</p>
-      <p className="text-xs text-gray-400 mt-1">Upload a claim document to view it here</p>
-    </div>
-  </div>
-)
-
-const PdfErrorState: React.FC = () => (
-  <div className="flex flex-col items-center justify-center h-full gap-4 py-16">
-    <div className="w-16 h-16 bg-red-50 rounded-3xl flex items-center justify-center">
-      <AlertCircle size={28} className="text-red-400" />
-    </div>
-    <div className="text-center">
-      <p className="text-sm font-semibold text-gray-600">Could not load document</p>
-      <p className="text-xs text-gray-400 mt-1">The PDF may be corrupted or inaccessible</p>
+    <div className="text-center space-y-2">
+      <p className="text-sm font-semibold text-gray-700">Document Evidence File</p>
+      <p className="text-xs text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded-lg">
+        {activePdfUrl}
+      </p>
+      <a
+        href={activePdfUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 underline mt-2"
+      >
+        Open PDF Document in New Tab
+      </a>
     </div>
   </div>
 )

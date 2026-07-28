@@ -65,6 +65,23 @@ export async function analyzeClaim(payload: {
 }
 
 /**
+ * Fetch the persisted analysis result for a claim (after SSE COMPLETED).
+ * Falls back to POST /analyze if GET returns 404 (persistence race condition).
+ */
+export async function analyzeByClaimId(claimId: string) {
+  try {
+    const response = await apiClient.get(`/api/v1/analyze/${claimId}`)
+    return response.data
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      const response = await apiClient.post('/api/v1/analyze', { claim_id: claimId })
+      return response.data
+    }
+    throw err
+  }
+}
+
+/**
  * Get stream URL for a claim (SSE)
  * Returns full URL string for EventSource connection
  */

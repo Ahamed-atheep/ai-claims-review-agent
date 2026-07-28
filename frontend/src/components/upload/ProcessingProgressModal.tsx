@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, XCircle, Loader2, Zap } from 'lucide-react'
+import { CheckCircle2, Loader2, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useClaimStore } from '@/store/useClaimStore'
+import { useClaimStore, type ClaimReport } from '@/store/useClaimStore'
 import { useSSEStream } from '@/hooks/useSSEStream'
+import { analyzeByClaimId } from '@/lib/api'
 
 const STEPS = [
   { key: 'OCR_COMPLETE',   label: 'OCR Extraction',       icon: '📄', desc: 'Reading & extracting document text' },
@@ -32,11 +33,23 @@ export const ProcessingProgressModal: React.FC<ProcessingProgressModalProps> = (
   isOpen,
   onComplete,
 }) => {
-  const { processingProgress, currentStepMessage, currentStep, processingSteps } = useClaimStore()
+  const { processingProgress, currentStepMessage, currentStep, processingSteps, setReport } = useClaimStore()
+
+  const handleComplete = async () => {
+    if (claimId) {
+      try {
+        const data = await analyzeByClaimId(claimId)
+        setReport(data as ClaimReport, data)
+      } catch (err) {
+        console.error('[Analysis fetch failed]', err)
+      }
+    }
+    onComplete()
+  }
 
   useSSEStream({
     claimId: isOpen ? claimId : null,
-    onComplete,
+    onComplete: handleComplete,
     onError: (err) => console.error('[SSE Error]', err),
   })
 

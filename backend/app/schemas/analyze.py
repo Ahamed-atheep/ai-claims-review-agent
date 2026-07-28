@@ -2,13 +2,17 @@
 app/schemas/analyze.py
 
 Schemas for the AI analysis endpoint.
-The client sends only claim_id — all claim data is loaded server-side.
 """
 from pydantic import BaseModel, Field
 
 
 class AnalyzeRequest(BaseModel):
     claim_id: str
+    policy_number: str | None = None
+    claimant_name: str | None = None
+    claim_amount: float | None = None
+    claim_type: str | None = None
+    extracted_text: str | None = None
 
 
 class AgentResult(BaseModel):

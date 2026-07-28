@@ -20,7 +20,7 @@ app = FastAPI(
 # Enable CORS for frontend / backend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[config.FRONTEND_URL, config.BACKEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -71,6 +71,7 @@ interface ClaimStoreState {
   // UI interaction state
   selectedCitation: string | null
   activeTab: string
+  activeNav: 'dashboard' | 'claims' | 'analysis' | 'documents' | 'settings'
   isSidebarOpen: boolean
   hasSeenIntro: boolean
 
@@ -89,6 +90,7 @@ interface ClaimStoreState {
 
   setSelectedCitation: (citationId: string | null) => void
   setActiveTab: (tab: string) => void
+  setActiveNav: (nav: 'dashboard' | 'claims' | 'analysis' | 'documents' | 'settings') => void
   toggleSidebar: () => void
   setHasSeenIntro: (hasSeen: boolean) => void
 
@@ -110,6 +112,7 @@ const INITIAL_STATE = {
   rawResponse: null,
   selectedCitation: null,
   activeTab: 'overview',
+  activeNav: 'dashboard' as const,
   isSidebarOpen: true,
   hasSeenIntro: false,
 }
@@ -158,6 +161,8 @@ export const useClaimStore = create<ClaimStoreState>((set) => ({
   setSelectedCitation: (citationId) => set({ selectedCitation: citationId }),
 
   setActiveTab: (tab) => set({ activeTab: tab }),
+
+  setActiveNav: (nav) => set({ activeNav: nav }),
 
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 

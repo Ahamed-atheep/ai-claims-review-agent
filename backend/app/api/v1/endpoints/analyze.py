@@ -2,7 +2,7 @@
 app/api/v1/endpoints/analyze.py
 
 AI Analysis endpoint.
-Client sends only claim_id — all data is loaded and persisted server-side.
+Accepts claim_id or full claim payload for AI analysis.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,18 +30,9 @@ async def analyze_claim(
     db: AsyncSession = Depends(get_db),
     svc: AnalysisService = Depends(get_analysis_service),
 ) -> AnalyzeResponse:
-    """Run AI risk analysis on an existing claim.
-
-    - Loads claim and all linked documents from the database.
-    - Concatenates raw_ocr_text from all documents.
-    - Runs MockAIService (will be replaced with LangGraph AI Engine).
-    - Persists results to agent_analyses and synthesis_reports.
-    - Returns the full analysis response.
-
-    The client only needs to provide claim_id.
-    """
+    """Run AI risk analysis on a claim."""
     try:
-        return await svc.analyze(payload.claim_id, db)
+        return await svc.analyze(payload, db)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     except RuntimeError as exc:
@@ -55,7 +46,7 @@ async def analyze_claim(
         logger.error("Analysis failed | claim_id=%s | %s", payload.claim_id, exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Analysis failed. See server logs.",
+            detail=f"Analysis failed: {exc}",
         )
 
 
@@ -84,7 +75,7 @@ async def analyze_claim_by_path(
         logger.error("Analysis failed | claim_id=%s | %s", claim_id, exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Analysis failed. See server logs.",
+            detail=f"Analysis failed: {exc}",
         )
 
 

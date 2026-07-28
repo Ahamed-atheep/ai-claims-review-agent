@@ -12,7 +12,9 @@ interface HeaderProps {
   onNavigateHome: () => void
 }
 
-const navItems = [
+type NavId = 'dashboard' | 'claims' | 'analysis' | 'documents' | 'settings'
+
+const navItems: { id: NavId; label: string; icon: React.ElementType }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'claims', label: 'Claims History', icon: FolderOpen },
   { id: 'analysis', label: 'Analytics', icon: BarChart3 },
@@ -21,8 +23,7 @@ const navItems = [
 ]
 
 export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigateHome }) => {
-  const { isSidebarOpen, toggleSidebar, report, hasSeenIntro } = useClaimStore()
-  const [activeNav, setActiveNav] = React.useState('dashboard')
+  const { isSidebarOpen, toggleSidebar, report, hasSeenIntro, activeNav, setActiveNav } = useClaimStore()
 
   if (currentPage === 'landing') {
     return (
@@ -209,12 +210,12 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigateHome }) =
         </button>
 
         {/* Page title */}
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>Dashboard</span>
-          {report && (
+        <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <span>{navItems.find(n => n.id === activeNav)?.label || 'Dashboard'}</span>
+          {activeNav === 'dashboard' && report && (
             <>
-              <ChevronRight size={14} />
-              <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100">
+              <ChevronRight size={14} className="text-gray-400" />
+              <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 font-bold">
                 {report.claim_id}
               </span>
             </>

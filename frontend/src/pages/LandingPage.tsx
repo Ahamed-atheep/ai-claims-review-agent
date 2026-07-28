@@ -8,6 +8,7 @@ import { DropzoneUpload } from '@/components/upload/DropzoneUpload'
 import { ProcessingProgressModal } from '@/components/upload/ProcessingProgressModal'
 import { useClaimStore } from '@/store/useClaimStore'
 import { MOCK_CLAIM_RESPONSE } from '@/lib/mockData'
+import { analyzeByClaimId } from '@/lib/api'
 import { AnimatedCounter } from '@/components/common/AnimatedCounter'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
@@ -81,6 +82,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
       setReport(mockReport)
     }
     onNavigateToDashboard()
+  }
+
+  const runSeededDemo = async () => {
+    try {
+      const seededId = 'ca15f152-c02e-4145-b00d-8d0f23897828'
+      const data = await analyzeByClaimId(seededId)
+      // set report in store and navigate
+      setReport(data)
+      onNavigateToDashboard()
+    } catch (err) {
+      console.error('Seeded demo failed', err)
+    }
   }
 
   return (
@@ -194,6 +207,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                       >
                         <Zap size={15} className="text-amber-400" />
                         Run Demo
+                      </button>
+                    )}
+                    {import.meta.env.DEV && (
+                      <button
+                        onClick={runSeededDemo}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-full border border-white/20 backdrop-blur-sm transition-all duration-150 cursor-pointer select-none"
+                      >
+                        Run Seeded Demo
                       </button>
                     )}
                   </motion.div>

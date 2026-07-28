@@ -2,13 +2,17 @@ import React, { useState } from 'react'
 import { Header } from '@/components/common/Header'
 import { LandingPage } from '@/pages/LandingPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { ClaimsHistoryPage } from '@/pages/ClaimsHistoryPage'
+import { AnalyticsPage } from '@/pages/AnalyticsPage'
+import { DocumentsPage } from '@/pages/DocumentsPage'
+import { SettingsPage } from '@/pages/SettingsPage'
 import { useClaimStore } from '@/store/useClaimStore'
 import { cn } from '@/lib/utils'
 import { Interactive3DBackground } from "@/components/background"
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'landing' | 'dashboard'>('landing')
-  const { isSidebarOpen, isProcessing, report, processingSteps } = useClaimStore()
+  const { isSidebarOpen, isProcessing, report, processingSteps, activeNav } = useClaimStore()
 
   // Determine background state
   let agentStatus: "idle" | "processing" | "success" | "warning" | "error" = "idle";
@@ -34,6 +38,22 @@ function App() {
     window.scrollTo(0, 0)
   }
 
+  const renderDashboardView = () => {
+    switch (activeNav) {
+      case 'claims':
+        return <ClaimsHistoryPage />
+      case 'analysis':
+        return <AnalyticsPage />
+      case 'documents':
+        return <DocumentsPage />
+      case 'settings':
+        return <SettingsPage />
+      case 'dashboard':
+      default:
+        return <DashboardPage onNavigateBack={navigateToHome} />
+    }
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden font-sans">
       <Interactive3DBackground state={agentStatus} intensity={0.8} interactive />
@@ -57,7 +77,7 @@ function App() {
           {currentPage === 'landing' ? (
             <LandingPage onNavigateToDashboard={navigateToDashboard} />
           ) : (
-            <DashboardPage onNavigateBack={navigateToHome} />
+            renderDashboardView()
           )}
         </main>
       </div>
