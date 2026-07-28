@@ -1,36 +1,30 @@
+import asyncio
 import json
-import os
-import sys
+from ai_engine.models.request_model import ClaimAnalysisRequest
+from ai_engine.orchestrator.master import MasterOrchestrator
+from ai_engine.utils.logger import logger
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from ai_engine.agents.workflow import analyze_claim_pipeline
-
-def run_test():
-    print("=" * 60)
-    print("🤖 MEMBER 1: TESTING AI AGENT & RAG PIPELINE")
-    print("=" * 60)
-
-    sample_claim = {
-        "claim_id": "CLM-2026-9901",
-        "policy_number": "POL-88321",
-        "claimant_name": "John Doe",
-        "claim_amount": 15500.00,
-        "claim_type": "Auto Collision",
-        "extracted_text": "Claimant states vehicle hit guardrail on Highway 101. Repair estimate timestamp precedes incident date by 2 days. Single vehicle incident without police report attached."
-    }
-
-    print("\n[Input Claim Payload]:")
-    print(json.dumps(sample_claim, indent=2))
-
-    print("\n[Executing Multi-Agent Workflow...]")
-    result = analyze_claim_pipeline(sample_claim)
-
-    print("\n[Final Output JSON - Matching Team Shared Contract]:")
-    print(json.dumps(result, indent=2))
-    print("\n" + "=" * 60)
-    print("✅ MEMBER 1 AI ENGINE TEST PASSED SUCCESSFULLY!")
-    print("=" * 60)
+async def run_member1_test():
+    logger.info("========== TESTING MEMBER 1 (AI ENGINE) ==========")
+    
+    orchestrator = MasterOrchestrator()
+    
+    test_request = ClaimAnalysisRequest(
+        claim_id="CLM-2026-9901",
+        policy_number="POL-88321",
+        claimant_name="John Doe",
+        claim_amount=15500.00,
+        claim_type="Auto Collision",
+        extracted_text="Claimant states vehicle hit guardrail on Highway 101. Repair estimate timestamp precedes incident date by 2 days. Body shop labor rate billed at $125 per hour."
+    )
+    
+    logger.info("Executing 5-Agent Parallel RAG Analysis...")
+    response = await orchestrator.analyze_claim(test_request)
+    
+    print("\n=================== FINAL JSON RESPONSE (API CONTRACT) ===================")
+    print(json.dumps(response.model_dump(), indent=2))
+    print("==========================================================================\n")
+    logger.info("SUCCESS: Member 1 AI Engine executed flawlessly!")
 
 if __name__ == "__main__":
-    run_test()
+    asyncio.run(run_member1_test())
