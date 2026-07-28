@@ -1,17 +1,17 @@
 from typing import Dict, Any
 from ai_engine.agents.base_agent import BaseAgent
-from ai_engine.models.agent_models import MedicalAgentOutput
+from ai_engine.models.agent_models import EvidenceAgentOutput
 from ai_engine.rag.retriever import retrieve_domain_context
 from ai_engine.utils.logger import logger
 
-class MedicalAgent(BaseAgent):
-    """Medical & Repair Cost Agent (domain=medical)."""
+class EvidenceAgent(BaseAgent):
+    """Evidence Verification Agent (domain=evidence)."""
 
     def __init__(self):
         super().__init__(
-            name="Medical & Repair Cost Agent",
-            domain="medical",
-            prompt_file="medical.txt"
+            name="Evidence Verification Agent",
+            domain="evidence",
+            prompt_file="evidence.txt"
         )
 
     async def analyze(self, claim_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -20,7 +20,7 @@ class MedicalAgent(BaseAgent):
         query = f"{claim_data.get('claim_type', '')} {claim_data.get('extracted_text', '')}"
         context = retrieve_domain_context(domain=self.domain, query=query, top_k=3)
         if not context:
-            context = "Standard body shop labor rate benchmark: $65-$95/hr. CPT 99283 ER Visit, CPT 72125 CT Scan."
+            context = "Evidence Rules: Police report mandatory for claims > $3,000. Tow receipts required."
 
         prompt_str = self.prompt_template.format(
             context=context,
@@ -36,16 +36,20 @@ class MedicalAgent(BaseAgent):
         raw_text = response.content if hasattr(response, "content") else str(response)
         parsed = self._parse_json_response(raw_text)
 
-        score = parsed.get("score", 0)
-        flags = parsed.get("flags", [])
+        consistency_score = parsed.get("consistency_score", 70)
+        missing_evidence = parsed.get("missing_evidence", [])
+        conflicts = parsed.get("conflicts", [])
 
-        # Heuristic cost audit
+        # Heuristic checks
         extracted = claim_data.get("extracted_text", "").lower()
-        if "125" in extracted or "labor rate" in extracted or "inflated" in extracted:
-            if "Labor rate exceeds regional benchmark" not in flags:
-                flags.append("Labor rate exceeds regional benchmark")
-            score = max(score, 60)
+        if "without police report" in extracted or "no police report" in extracted:
+            if "Police report missing for damage > $3,000" not in missing_evidence:
+                missing_evidence.append("Police report missing for damage > $3,000")
 
-        output = MedicalAgentOutput(score=score, flags=flags)
-        logger.info(f"[{self.name}] Result: score={output.score}, flags={output.flags}")
+        output = EvidenceAgentOutput(
+            consistency_score=consistency_score,
+            missing_evidence=missing_evidence,
+            conflicts=conflicts
+        )
+        logger.info(f"[{self.name}] Result: consistency_score={output.consistency_score}")
         return output.model_dump()

@@ -1,0 +1,33 @@
+================================================================================
+OFFICIAL MEDICAL CPT/ICD CODES AND AUTO REPAIR REGIONAL COST BENCHMARKS (2026)
+================================================================================
+
+SECTION 1: AUTO REPAIR COST BENCHMARKS BY REGION
+-------------------------------------------------
+1. Body Shop Mechanical & Structural Labor Rates:
+   - Regional Average: $75.00 - $110.00 / hour.
+   - Refinish / Paint Labor Rate: $60.00 - $90.00 / hour.
+   - Aluminum / Specialty Structural Repair Rate: $120.00 - $165.00 / hour.
+
+2. Component Replacement Price Benchmarks (Sedan / SUV Standard):
+   - Front Bumper Cover (Parts + Labor): $650.00 - $1,250.00.
+   - Headlight Assembly (Halogen/LED): $350.00 - $850.00.
+   - Hood Replacement & Painting: $850.00 - $1,600.00.
+   - Guardrail Impact Front-End Repair Average: $4,200.00 - $8,500.00.
+
+3. Red Flag Threshold:
+   - Any repair invoice exceeding $12,000 for a minor low-speed collision requires mandatory adjuster re-inspection.
+
+SECTION 2: MEDICAL PROCEDURAL CODES (CPT & ICD-10 BENCHMARKS)
+--------------------------------------------------------------
+1. Medical Procedural Codes (CPT):
+   - CPT 99283 (Emergency Dept Evaluation - Moderate Complexity): Benchmark $350 - $750.
+   - CPT 99284 (Emergency Dept Evaluation - High Complexity): Benchmark $750 - $1,300.
+   - CPT 72125 (CT Scan - Cervical Spine without Contrast): Benchmark $450 - $950.
+   - CPT 73721 (MRI - Lower Extremity / Knee Joint): Benchmark $650 - $1,400.
+   - CPT 97110 (Therapeutic Exercise - 15 minute unit): Benchmark $45 - $90 per unit.
+   - CPT 97140 (Manual Therapy Techniques - 15 minute unit): Benchmark $50 - $95 per unit.
+
+2. Common Injury ICD-10 Diagnosis Codes:
+   - ICD-10 S13.4XXA: Sprain of cervical spine ligament (Whiplash, initial encounter). Standard recovery time: 2 to 6 weeks.
+   - ICD-10 S42.301A: Fracture of shaft of right humerus. Standard treatment: Casting or ORIF surgery.

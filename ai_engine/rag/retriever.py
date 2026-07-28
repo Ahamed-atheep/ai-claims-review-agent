@@ -1,52 +1,43 @@
-import os
-import glob
-from ai_engine.config import GEMINI_API_KEY, PINECONE_API_KEY, PINECONE_INDEX_NAME, EMBEDDING_MODEL
+from ai_engine.rag.vector_store import get_vector_store
+from ai_engine.utils.logger import logger
 
-class KnowledgeRetriever:
-    def __init__(self):
-        self.knowledge_dir = os.path.join(os.path.dirname(__file__), "..", "knowledge_base")
+# Fallback in-memory domain knowledge for local testing/dev
+FALLBACK_DOMAIN_KNOWLEDGE = {
+    "fraud": "Rule FRD-101: Repair estimate or medical invoice dated prior to reported accident date. Rule FRD-102: Duplicate billing and phantom parts. Rule FRD-103: Ghost repair shops.",
+    "medical": "Body shop labor rate regional benchmark: $65-$95/hr standard. Over $125/hr flagged as inflated. CPT 99283 ER Visit $350-$750 benchmark, CPT 72125 CT Scan $400-$950.",
+    "policy": "Apex Auto Collision Policy: Maximum collision limit $50,000 per incident. Standard deductible $500. Statutory 30-day reporting window. Exclusions: racing, DUI, pre-existing damage.",
+    "evidence": "Evidence Requirements: Police report mandatory for claims over $3,000. Tow receipts timestamp must match accident date. Vehicle photos required showing VIN.",
+    "historical": "Historical Fraud Database: Flagged high-risk vendors include Apex Collision Center and Quick Care Clinic. Repeat claimants filing >3 claims in 12 months referred to SIU."
+}
 
-    def retrieve(self, query: str, top_k: int = 4) -> str:
-        if PINECONE_API_KEY and GEMINI_API_KEY:
-            try:
-                import google.generativeai as genai
-                from pinecone import Pinecone
-                
-                genai.configure(api_key=GEMINI_API_KEY)
-                pc = Pinecone(api_key=PINECONE_API_KEY)
-                index = pc.Index(PINECONE_INDEX_NAME)
+def get_domain_retriever(domain: str, top_k: int = 3):
+    """Returns a retriever configured with metadata domain filtering."""
+    try:
+        vector_store = get_vector_store()
+        if not vector_store:
+            return None
+        return vector_store.as_retriever(
+            search_kwargs={"k": top_k, "filter": {"domain": domain}}
+        )
+    except Exception as e:
+        logger.warning(f"Unable to connect vector store retriever for domain='{domain}': {e}")
+        return None
 
-                emb = genai.embed_content(
-                    model=EMBEDDING_MODEL,
-                    content=query,
-                    task_type="retrieval_query"
-                )["embedding"]
+def retrieve_domain_context(domain: str, query: str, top_k: int = 3) -> str:
+    """
+    Step 5-7 of RAG Flow: Embeds query, retrieves domain-tagged vector chunks from Pinecone, 
+    and returns context text to be combined with System Prompt for LLM inference.
+    """
+    try:
+        vector_store = get_vector_store()
+        if vector_store:
+            docs = vector_store.similarity_search(query, k=top_k, filter={"domain": domain})
+            if docs:
+                logger.info(f"Retrieved {len(docs)} chunks from Pinecone for domain='{domain}'")
+                return "\n---\n".join([d.page_content for d in docs])
+    except Exception as e:
+        logger.warning(f"Pinecone search error for domain='{domain}': {e}")
 
-                res = index.query(vector=emb, top_k=top_k, include_metadata=True)
-                contexts = [match["metadata"]["text"] for match in res["matches"] if "text" in match.get("metadata", {})]
-                if contexts:
-                    return "\n---\n".join(contexts)
-            except Exception as e:
-                print(f"[Retriever Warning] Vector DB query error, using local fallback: {e}")
-
-        matches = []
-        files = glob.glob(os.path.join(self.knowledge_dir, "*.txt"))
-        query_words = set(query.lower().split())
-
-        for file_path in files:
-            with open(file_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                for line in lines:
-                    if line.strip() and any(word in line.lower() for word in query_words if len(word) > 3):
-                        matches.append(line.strip())
-
-        if matches:
-            return "\n".join(matches[:top_k * 3])
-        
-        return "Standard policy limit applies ($50,000 max). Claims with date inconsistencies or inflated bills trigger mandatory fraud investigation."
-
-if __name__ == "__main__":
-    retriever = KnowledgeRetriever()
-    result = retriever.retrieve("Auto collision repair estimate timestamp discrepancy")
-    print("--- Retrieved Context ---")
-    print(result)
+    # Fallback knowledge return matching RAG step 7
+    logger.info(f"Using domain knowledge fallback for domain='{domain}'")
+    return FALLBACK_DOMAIN_KNOWLEDGE.get(domain, "Standard policy rules and fraud benchmarks.")

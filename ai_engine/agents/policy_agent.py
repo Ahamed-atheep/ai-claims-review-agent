@@ -1,17 +1,17 @@
 from typing import Dict, Any
 from ai_engine.agents.base_agent import BaseAgent
-from ai_engine.models.agent_models import MedicalAgentOutput
+from ai_engine.models.agent_models import PolicyAgentOutput
 from ai_engine.rag.retriever import retrieve_domain_context
 from ai_engine.utils.logger import logger
 
-class MedicalAgent(BaseAgent):
-    """Medical & Repair Cost Agent (domain=medical)."""
+class PolicyAgent(BaseAgent):
+    """Policy Compliance Agent (domain=policy)."""
 
     def __init__(self):
         super().__init__(
-            name="Medical & Repair Cost Agent",
-            domain="medical",
-            prompt_file="medical.txt"
+            name="Policy Compliance Agent",
+            domain="policy",
+            prompt_file="policy.txt"
         )
 
     async def analyze(self, claim_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -20,7 +20,7 @@ class MedicalAgent(BaseAgent):
         query = f"{claim_data.get('claim_type', '')} {claim_data.get('extracted_text', '')}"
         context = retrieve_domain_context(domain=self.domain, query=query, top_k=3)
         if not context:
-            context = "Standard body shop labor rate benchmark: $65-$95/hr. CPT 99283 ER Visit, CPT 72125 CT Scan."
+            context = "Apex Policy Rules: Max collision coverage $50,000. Standard deductible $500. 30-day reporting window."
 
         prompt_str = self.prompt_template.format(
             context=context,
@@ -36,16 +36,9 @@ class MedicalAgent(BaseAgent):
         raw_text = response.content if hasattr(response, "content") else str(response)
         parsed = self._parse_json_response(raw_text)
 
-        score = parsed.get("score", 0)
-        flags = parsed.get("flags", [])
+        status = parsed.get("status", "APPROVED_WITH_CONDITIONS")
+        violations = parsed.get("violations", [])
 
-        # Heuristic cost audit
-        extracted = claim_data.get("extracted_text", "").lower()
-        if "125" in extracted or "labor rate" in extracted or "inflated" in extracted:
-            if "Labor rate exceeds regional benchmark" not in flags:
-                flags.append("Labor rate exceeds regional benchmark")
-            score = max(score, 60)
-
-        output = MedicalAgentOutput(score=score, flags=flags)
-        logger.info(f"[{self.name}] Result: score={output.score}, flags={output.flags}")
+        output = PolicyAgentOutput(status=status, violations=violations)
+        logger.info(f"[{self.name}] Result: status={output.status}, violations={output.violations}")
         return output.model_dump()

@@ -1,38 +1,52 @@
-import json
-from ai_engine.config import GEMINI_API_KEY, LLM_MODEL
-from ai_engine.agents.state import ClaimState
+from typing import Dict, Any
+from ai_engine.agents.base_agent import BaseAgent
+from ai_engine.models.agent_models import FraudAgentOutput
+from ai_engine.rag.retriever import retrieve_domain_context
+from ai_engine.utils.logger import logger
 
-def run_fraud_agent(state: ClaimState) -> ClaimState:
-    """Fraud Agent detects anomalies, duplicate billing, and suspicious red flags."""
-    text = state.get("extracted_text", "")
-    rag = state.get("rag_context", "")
-    amount = state.get("claim_amount", 0)
+class FraudAgent(BaseAgent):
+    """Fraud Intelligence Agent (domain=fraud)."""
 
-    flags = []
-    score = 20
+    def __init__(self):
+        super().__init__(
+            name="Fraud Intelligence Agent",
+            domain="fraud",
+            prompt_file="fraud.txt"
+        )
 
-    # Rule checks based on extracted text & amount
-    if amount > 10000:
-        flags.append(f"High claim amount (${amount:,.2f}) exceeding standard single-vehicle threshold")
-        score += 25
+    async def analyze(self, claim_data: Dict[str, Any]) -> Dict[str, Any]:
+        logger.info(f"[{self.name}] Running domain='{self.domain}' retrieval and analysis...")
+        
+        query = f"{claim_data.get('claim_type', '')} {claim_data.get('extracted_text', '')}"
+        context = retrieve_domain_context(domain=self.domain, query=query, top_k=3)
+        if not context:
+            context = "Standard fraud indicators catalog: Rule FRD-101 timeline discrepancy, FRD-102 duplicate billing."
 
-    text_lower = text.lower()
-    if "prior" in text_lower or "pre-existing" in text_lower or "estimate" in text_lower:
-        flags.append("Potential timeline anomaly detected between incident date and repair invoice timestamp")
-        score += 35
+        prompt_str = self.prompt_template.format(
+            context=context,
+            claim_id=claim_data.get("claim_id", ""),
+            policy_number=claim_data.get("policy_number", ""),
+            claimant_name=claim_data.get("claimant_name", ""),
+            claim_amount=claim_data.get("claim_amount", 0.0),
+            claim_type=claim_data.get("claim_type", ""),
+            extracted_text=claim_data.get("extracted_text", "")
+        )
 
-    if "guardrail" in text_lower or "single vehicle" in text_lower:
-        flags.append("Single-vehicle collision without third-party witness or police report attached")
-        score += 20
+        response = await self.llm.ainvoke(prompt_str)
+        raw_text = response.content if hasattr(response, "content") else str(response)
+        parsed = self._parse_json_response(raw_text)
 
-    if not flags:
-        flags.append("No obvious automated fraud indicators detected")
+        # Fallback / heuristic safety checks
+        score = parsed.get("score", 0)
+        flags = parsed.get("flags", [])
 
-    fraud_res = {
-        "score": min(score, 95),
-        "flags": flags,
-        "status": "SUSPICIOUS" if score > 50 else "CLEAN"
-    }
+        # Check for pre-dated estimate heuristic in extracted text
+        extracted = claim_data.get("extracted_text", "").lower()
+        if "precedes" in extracted or "pre-dated" in extracted or "dated before" in extracted:
+            if "Timeline discrepancy: Estimate date precedes accident date" not in flags:
+                flags.append("Timeline discrepancy: Estimate date precedes accident date")
+            score = max(score, 75)
 
-    state["fraud_analysis"] = fraud_res
-    return state
+        output = FraudAgentOutput(score=score, flags=flags)
+        logger.info(f"[{self.name}] Result: score={output.score}, flags={output.flags}")
+        return output.model_dump()

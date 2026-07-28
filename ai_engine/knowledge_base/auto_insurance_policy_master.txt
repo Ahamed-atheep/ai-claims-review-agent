@@ -1,0 +1,45 @@
+================================================================================
+APEX NATIONAL INSURANCE COMPANY - COMPREHENSIVE AUTO POLICY HANDBOOK (POLICY MASTER 2026)
+================================================================================
+
+PART I: COVERAGE DEFINITIONS AND LIMITS
+----------------------------------------
+1. Collision Coverage (Form COL-100):
+   - Maximum Limit per Occurrence: $50,000.
+   - Standard Deductible: $500 per claim. Deductible is waived if repairs are performed by an Apex Certified Preferred Repair Facility.
+   - Covered Events: Direct physical loss to covered auto caused by accidental upset or collision with another vehicle or object.
+
+2. Comprehensive Coverage (Form CMP-200):
+   - Maximum Limit per Occurrence: $25,000.
+   - Standard Deductible: $250 per claim.
+   - Covered Events: Vandalism, theft, glass breakage, falling objects, animal strike, flood, or fire.
+
+3. Bodily Injury & Medical Payments (Form MED-300):
+   - Medical Payment Limit: $10,000 per injured passenger.
+   - Bodily Injury Liability Limit: $100,000 per person / $300,000 per accident.
+   - Coverage Scope: Reasonable and necessary medical expenses incurred within 1 year of the accident date.
+
+PART II: MANDATORY POLICY EXCLUSIONS
+-------------------------------------
+1. Exclusion 2.1 - Illegal Acts & Racing:
+   No coverage is provided for any loss occurring while the covered auto is being operated in any competitive racing event, speed test, stunt, or while committing a felony or fleeing law enforcement.
+
+2. Exclusion 2.2 - Driving Under the Influence (DUI/DWI):
+   Physical damage coverage is excluded if the driver at the time of the accident has a Blood Alcohol Content (BAC) exceeding the statutory state limit (0.08%) or refuses chemical sobriety testing.
+
+3. Exclusion 2.3 - Pre-Existing Damage & Wear/Tear:
+   Coverage excludes pre-existing body rust, mechanical deterioration, engine wear, or un-repaired damage sustained in prior accidents before the policy inception date.
+
+4. Exclusion 2.4 - Fraud and Intentional Misrepresentation:
+   The entire policy is voided if any insured, claimant, or representative knowingly conceals material facts, exaggerates invoice costs, submits forged receipts, or makes fraudulent statements regarding a claim.
+
+PART III: CLAIMS FILING CONDITIONS & DUTIES
+--------------------------------------------
+1. Reporting Deadline:
+   Claims must be reported to Apex Insurance within 30 calendar days of the accident date. Failure to report within 30 days without documented incapacitation may result in claim denial.
+
+2. Mandatory Police Report Threshold:
+   A formal state or municipal police collision report is required for all claims exceeding $3,000 in physical damage, any multi-vehicle accident, or any accident resulting in bodily injury.
+
+3. Inspection & Repair Authorization:
+   No repair work exceeding $2,500 may begin without prior visual inspection and written estimate approval from an authorized Apex Insurance claims adjuster.
