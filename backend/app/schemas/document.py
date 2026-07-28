@@ -12,5 +12,4 @@ class DocumentUploadResponse(BaseModel):
     characters: int
     extraction_method: Literal["pymupdf", "easyocr"]
     ocr_used: bool
-    storage_path: str
     message: str

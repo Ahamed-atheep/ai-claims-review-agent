@@ -7,8 +7,8 @@ All database access goes through app/crud/claim_crud.py.
 from __future__ import annotations
 
 import math
-import os
 import time
+from pathlib import Path
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,10 +34,14 @@ from app.schemas.claim import (
     PaginationMeta,
     UpdateClaimRequest,
 )
+from app.services.storage_service import StorageService
 
 
 class ClaimService:
     """Orchestrates all claim business logic."""
+
+    def __init__(self) -> None:
+        self._storage = StorageService()
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -123,7 +127,6 @@ class ClaimService:
                     file_name=d.file_name,
                     mime_type=d.mime_type,
                     page_count=d.page_count,
-                    storage_path=d.storage_path,
                     created_at=d.created_at,
                 )
                 for d in docs
@@ -219,25 +222,55 @@ class ClaimService:
     async def delete_claim(self, claim_id: str, db: AsyncSession) -> None:
         """Delete a claim and clean up local storage files.
 
-        Child rows are removed by DB CASCADE.
-        Local PDF files are deleted best-effort.
+        Sequence:
+          1. Verify claim exists (404 guard).
+          2. Stage uploaded PDFs so they can be restored if the DB delete fails.
+          3. DELETE claim row — DB CASCADE removes child rows.
+          4. COMMIT the transaction.
+          5. Remove staged PDF files after commit.
 
         Raises:
             ValueError: Claim not found.
+            RuntimeError: Database deletion failed.
         """
         await self.get_or_404(claim_id, db)  # 404 guard
 
-        storage_paths = await delete_claim_by_id(db, claim_id)
-        await db.commit()
+        docs = await fetch_documents_for_claim(db, claim_id)
+        staged_files: list[tuple[Path, Path]] = []
 
-        # Best-effort local file cleanup
+        try:
+            for doc in docs:
+                staged = self._storage.stage_for_delete(doc.storage_path)
+                if staged is not None:
+                    staged_files.append(staged)
+
+            await delete_claim_by_id(db, claim_id)
+            await db.commit()
+        except Exception as exc:
+            await db.rollback()
+            for original, staged in reversed(staged_files):
+                try:
+                    self._storage.restore_staged_delete(original, staged)
+                except OSError as restore_exc:
+                    logger.error(
+                        "Could not restore staged file | claim_id=%s | path=%s | error=%s",
+                        claim_id, original, restore_exc,
+                    )
+            raise RuntimeError(
+                f"Failed to delete claim '{claim_id}' from database: {exc}"
+            ) from exc
+
         deleted_files, failed_files = 0, 0
-        for path in storage_paths:
+        for _, staged in staged_files:
             try:
-                os.remove(path)
+                self._storage.finalize_staged_delete(staged)
                 deleted_files += 1
-            except OSError:
+            except OSError as exc:
                 failed_files += 1
+                logger.warning(
+                    "Could not delete file | claim_id=%s | path=%s | error=%s",
+                    claim_id, staged, exc,
+                )
 
         logger.info(
             "Claim deleted | claim_id=%s | files_deleted=%d | files_missing=%d",

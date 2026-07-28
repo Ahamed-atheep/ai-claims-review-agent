@@ -1,5 +1,6 @@
 import uuid
 from dataclasses import dataclass
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +15,6 @@ class DocumentIngestResult:
     document_id: str
     claim_id: str
     file_name: str
-    storage_path: str
     page_count: int
     characters: int
     extraction_method: str
@@ -35,6 +35,10 @@ class DocumentService:
     def __init__(self) -> None:
         self._storage = StorageService()
         self._extractor = DocumentExtractionService()
+
+    @staticmethod
+    def _uuid(value: str | UUID) -> UUID:
+        return value if isinstance(value, UUID) else UUID(str(value))
 
     async def ingest(
         self,
@@ -67,8 +71,8 @@ class DocumentService:
         try:
             # ── 2. INSERT skeleton row ────────────────────────────────────────
             doc_row = ClaimDocument(
-                document_id=document_id,
-                claim_id=claim_id,
+                document_id=self._uuid(document_id),
+                claim_id=self._uuid(claim_id),
                 file_name=original_filename,
                 storage_path=stored_path,
                 mime_type="application/pdf",
@@ -113,7 +117,6 @@ class DocumentService:
             document_id=document_id,
             claim_id=claim_id,
             file_name=original_filename,
-            storage_path=stored_path,
             page_count=extraction.page_count,
             characters=extraction.characters,
             extraction_method=extraction.method,

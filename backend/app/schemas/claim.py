@@ -6,19 +6,10 @@ Pydantic models for the Claims Management API.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
-
 from pydantic import BaseModel, Field, field_validator
+from app.db.models import ClaimStatus
 
 # ── Enum mirror (matches claim_status_enum in Supabase) ──────────────────────
-
-ClaimStatus = Literal[
-    "PENDING",
-    "PROCESSING",
-    "COMPLETED",
-    "FAILED",
-    "FLAGGED_MANUAL_REVIEW",
-]
 
 # ── Request models ────────────────────────────────────────────────────────────
 
@@ -66,7 +57,6 @@ class DocumentMeta(BaseModel):
     file_name: str
     mime_type: str
     page_count: int | None
-    storage_path: str
     created_at: datetime | None
 
     model_config = {"from_attributes": True}
@@ -81,7 +71,7 @@ class ClaimResponse(BaseModel):
     claimant_name: str
     claim_type: str
     claimed_amount: float
-    status: str
+    status: ClaimStatus
     created_at: datetime | None
     updated_at: datetime | None
 
@@ -90,21 +80,21 @@ class ClaimResponse(BaseModel):
 
 class ClaimDetailResponse(ClaimResponse):
     """Claim + all linked document metadata (no OCR text)."""
-    documents: list[DocumentMeta] = []
+    documents: list[DocumentMeta] = Field(default_factory=list)
 
 
 class CreateClaimResponse(BaseModel):
     success: bool
     claim_id: str
     claim_number: str
-    status: str
+    status: ClaimStatus
     message: str
 
 
 class UpdateClaimResponse(BaseModel):
     success: bool
     claim_id: str
-    status: str
+    status: ClaimStatus
     message: str
 
 

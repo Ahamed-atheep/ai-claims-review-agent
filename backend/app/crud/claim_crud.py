@@ -8,12 +8,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from uuid import UUID
 
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Claim, ClaimDocument
+from app.db.models import Claim, ClaimDocument, ClaimStatus
 
 
 # ── Typed result for list queries ────────────────────────────────────────────
@@ -24,6 +25,16 @@ class ClaimPage:
     total: int
     page: int
     page_size: int
+
+
+def _uuid(value: str | UUID) -> UUID:
+    return value if isinstance(value, UUID) else UUID(str(value))
+
+
+def _claim_status(value: str | ClaimStatus | None) -> ClaimStatus | None:
+    if value is None or isinstance(value, ClaimStatus):
+        return value
+    return ClaimStatus(value)
 
 
 # ── Write operations ──────────────────────────────────────────────────────────
@@ -49,8 +60,8 @@ async def insert_claim(
         claimant_name=claimant_name,
         claim_type=claim_type,
         claimed_amount=claimed_amount,
-        status="PENDING",
-        created_by=created_by,
+        status=ClaimStatus.PENDING,
+        created_by=_uuid(created_by) if created_by is not None else None,
     )
     db.add(claim)
     try:
@@ -65,7 +76,7 @@ async def insert_claim(
 async def fetch_claim_by_id(db: AsyncSession, claim_id: str) -> Claim | None:
     """SELECT a single claim by UUID. Returns None if not found."""
     result = await db.execute(
-        select(Claim).where(Claim.claim_id == claim_id)
+        select(Claim).where(Claim.claim_id == _uuid(claim_id))
     )
     return result.scalar_one_or_none()
 
@@ -84,7 +95,7 @@ async def fetch_claims_page(
     page: int,
     page_size: int,
     search: str | None,
-    status: str | None,
+    status: str | ClaimStatus | None,
     claim_type: str | None,
     sort_by: str,
     sort_order: str,
@@ -124,7 +135,7 @@ async def fetch_claims_page(
             )
         )
     if status:
-        base_q = base_q.where(Claim.status == status)
+        base_q = base_q.where(Claim.status == _claim_status(status))
     if claim_type:
         base_q = base_q.where(Claim.claim_type == claim_type)
 
@@ -146,7 +157,7 @@ async def fetch_documents_for_claim(
     """SELECT all claim_documents rows for a given claim_id."""
     result = await db.execute(
         select(ClaimDocument)
-        .where(ClaimDocument.claim_id == claim_id)
+        .where(ClaimDocument.claim_id == _uuid(claim_id))
         .order_by(ClaimDocument.created_at.asc())
     )
     return list(result.scalars().all())
@@ -159,7 +170,7 @@ async def update_claim_fields(
     claimant_name: str | None,
     claim_type: str | None,
     claimed_amount: float | None,
-    status: str | None,
+    status: str | ClaimStatus | None,
 ) -> Claim:
     """UPDATE mutable fields on an existing Claim row.
 
@@ -173,7 +184,7 @@ async def update_claim_fields(
     if claimed_amount is not None:
         claim.claimed_amount = claimed_amount
     if status is not None:
-        claim.status = status
+        claim.status = _claim_status(status)
 
     claim.updated_at = datetime.now(timezone.utc)
     await db.flush()
@@ -189,10 +200,10 @@ async def delete_claim_by_id(db: AsyncSession, claim_id: str) -> list[str]:
     """
     # Collect file paths before the cascade wipes them
     docs_result = await db.execute(
-        select(ClaimDocument.storage_path).where(ClaimDocument.claim_id == claim_id)
+        select(ClaimDocument.storage_path).where(ClaimDocument.claim_id == _uuid(claim_id))
     )
     storage_paths = list(docs_result.scalars().all())
 
-    await db.execute(delete(Claim).where(Claim.claim_id == claim_id))
+    await db.execute(delete(Claim).where(Claim.claim_id == _uuid(claim_id)))
     await db.flush()
     return storage_paths

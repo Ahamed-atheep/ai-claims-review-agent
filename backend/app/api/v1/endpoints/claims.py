@@ -210,6 +210,12 @@ async def delete_claim(
         await svc.delete_claim(claim_id, db)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except RuntimeError as exc:
+        logger.error("delete_claim DB failed | claim_id=%s | %s", claim_id, exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        )
     except Exception as exc:
         logger.error("delete_claim failed | claim_id=%s | %s", claim_id, exc)
         raise HTTPException(
@@ -310,6 +316,5 @@ async def upload_claim_document(
         characters=result.characters,
         extraction_method=result.extraction_method,
         ocr_used=result.ocr_used,
-        storage_path=result.storage_path,
         message="Document uploaded and processed successfully.",
     )

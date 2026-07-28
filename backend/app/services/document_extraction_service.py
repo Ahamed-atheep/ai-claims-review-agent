@@ -1,6 +1,7 @@
 import time
 from dataclasses import dataclass
 from typing import Literal
+from uuid import UUID
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -41,6 +42,10 @@ class DocumentExtractionService:
         if self._ocr is None:
             self._ocr = OCRService()
         return self._ocr
+
+    @staticmethod
+    def _uuid(value: str | UUID) -> UUID:
+        return value if isinstance(value, UUID) else UUID(str(value))
 
     def run(self, file_path: str, document_id: str = "") -> ExtractionResult:
         """Extract text from *file_path*, falling back to OCR when needed.
@@ -101,7 +106,7 @@ class DocumentExtractionService:
             RuntimeError: Database update failed.
         """
         result = await db.execute(
-            select(ClaimDocument).where(ClaimDocument.document_id == document_id)
+            select(ClaimDocument).where(ClaimDocument.document_id == self._uuid(document_id))
         )
         doc_row: ClaimDocument | None = result.scalar_one_or_none()
         if doc_row is None:
@@ -112,7 +117,7 @@ class DocumentExtractionService:
         try:
             await db.execute(
                 update(ClaimDocument)
-                .where(ClaimDocument.document_id == document_id)
+                .where(ClaimDocument.document_id == self._uuid(document_id))
                 .values(raw_ocr_text=extraction.text, page_count=extraction.page_count)
             )
             await db.commit()
