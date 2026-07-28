@@ -168,5 +168,5 @@ class AnalysisService:
             ),
             key_evidence=list(report.red_flags or []),
             investigator_questions=list(report.investigator_questions or []),
-            final_recommendation=report.recommended_action,
+            final_recommendation=report.recommended_action.api_value,
         )

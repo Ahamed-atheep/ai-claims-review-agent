@@ -25,6 +25,19 @@ class RiskLevel(str, Enum):
     CRITICAL = "CRITICAL"
 
 
+class RecommendedAction(str, Enum):
+    """Mirror of the action_enum PostgreSQL type."""
+    APPROVE = "APPROVE"
+    REJECT = "REJECT"
+    ESCALATE_TO_INVESTIGATOR = "ESCALATE_TO_INVESTIGATOR"
+
+    @property
+    def api_value(self) -> str:
+        if self is RecommendedAction.ESCALATE_TO_INVESTIGATOR:
+            return "REFER TO SPECIAL INVESTIGATION UNIT (SIU)"
+        return self.value
+
+
 class Claim(Base):
     """ORM model for the claims table."""
 
@@ -92,7 +105,15 @@ class SynthesisReportRow(Base):
         SQLEnum(RiskLevel, name="risk_level_enum", create_type=False),
         nullable=False,
     )
-    recommended_action = Column(String, nullable=False)
+    recommended_action = Column(
+        SQLEnum(
+            RecommendedAction,
+            name="action_enum",
+            create_type=False,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+    )
     executive_summary = Column(Text, nullable=False)
     red_flags = Column(JSONB, nullable=False)
     investigator_questions = Column(JSONB, nullable=False)

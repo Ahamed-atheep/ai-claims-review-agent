@@ -12,7 +12,12 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import AgentAnalysisRow, RiskLevel, SynthesisReportRow
+from app.db.models import (
+    AgentAnalysisRow,
+    RecommendedAction,
+    RiskLevel,
+    SynthesisReportRow,
+)
 
 
 def _uuid(value: str | UUID) -> UUID:
@@ -27,6 +32,25 @@ def _to_risk_level(value: str | RiskLevel) -> RiskLevel:
         return RiskLevel(value.upper())
     except ValueError:
         return RiskLevel.HIGH
+
+
+def _to_recommended_action(value: str | RecommendedAction) -> RecommendedAction:
+    """Coerce API/AI recommendation text to the action_enum mirror."""
+    if isinstance(value, RecommendedAction):
+        return value
+    normalized = value.strip().upper()
+    action_map = {
+        "APPROVE": RecommendedAction.APPROVE,
+        "REJECT": RecommendedAction.REJECT,
+        "ESCALATE_TO_INVESTIGATOR": RecommendedAction.ESCALATE_TO_INVESTIGATOR,
+        "REFER TO SPECIAL INVESTIGATION UNIT (SIU)": (
+            RecommendedAction.ESCALATE_TO_INVESTIGATOR
+        ),
+    }
+    try:
+        return action_map[normalized]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported recommended_action: {value!r}") from exc
 
 
 async def insert_agent_analysis(
@@ -60,7 +84,7 @@ async def insert_synthesis_report(
     claim_id: str,
     overall_risk_score: int,
     overall_risk_level: str | RiskLevel,
-    recommended_action: str,
+    recommended_action: str | RecommendedAction,
     executive_summary: str,
     red_flags: list[str],
     investigator_questions: list[str],
@@ -71,7 +95,7 @@ async def insert_synthesis_report(
         claim_id=_uuid(claim_id),
         overall_risk_score=overall_risk_score,
         overall_risk_level=_to_risk_level(overall_risk_level),
-        recommended_action=recommended_action,
+        recommended_action=_to_recommended_action(recommended_action),
         executive_summary=executive_summary,
         red_flags=red_flags,
         investigator_questions=investigator_questions,
