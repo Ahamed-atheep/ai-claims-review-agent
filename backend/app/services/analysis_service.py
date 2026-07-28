@@ -5,7 +5,7 @@ Orchestrates the full analysis pipeline:
   1. Load claim from DB
   2. Load all claim_documents and concatenate raw_ocr_text
   3. Run MockAIService (later: real AI Engine)
-  4. Persist results to agent_analyses + synthesis_reports
+  4. Persist results to agent_analyses + synthesis_reports (UPSERT)
   5. Return AnalyzeResponse
 """
 from __future__ import annotations
@@ -18,8 +18,8 @@ from app.core.logging import logger
 from app.crud.analysis_crud import (
     fetch_latest_agent_analyses,
     fetch_latest_synthesis_report,
-    insert_agent_analysis,
-    insert_synthesis_report,
+    upsert_agent_analysis,
+    upsert_synthesis_report,
 )
 from app.crud.claim_crud import fetch_claim_by_id, fetch_documents_for_claim
 from app.schemas.analyze import AgentAnalysis, AgentResult, AnalyzeResponse
@@ -75,11 +75,11 @@ class AnalysisService:
 
         elapsed_ms = int((time.perf_counter() - start) * 1000)
 
-        # ── 4. Persist to agent_analyses + synthesis_reports ──────────────────
+        # ── 4. Persist to agent_analyses + synthesis_reports (UPSERT) ──────────
         try:
             risk_level = _RISK_LEVEL_MAP.get(result.risk_level.upper(), "HIGH")
 
-            # One row per agent
+            # Upsert one row per agent
             agent_map = {
                 "fraud_agent": result.agent_analysis.fraud_agent,
                 "medical_agent": result.agent_analysis.medical_agent,
@@ -89,7 +89,7 @@ class AnalysisService:
                 agent_risk = _RISK_LEVEL_MAP.get(
                     "HIGH" if (agent_result.score or 0) >= 70 else "MEDIUM", "MEDIUM"
                 )
-                await insert_agent_analysis(
+                await upsert_agent_analysis(
                     db,
                     claim_id=claim_id,
                     agent_name=agent_name,
@@ -103,8 +103,8 @@ class AnalysisService:
                     execution_time_ms=elapsed_ms // 3,
                 )
 
-            # One synthesis report
-            await insert_synthesis_report(
+            # Upsert synthesis report by claim_id
+            await upsert_synthesis_report(
                 db,
                 claim_id=claim_id,
                 overall_risk_score=result.overall_risk_score,
