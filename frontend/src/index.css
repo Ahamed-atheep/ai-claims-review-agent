@@ -1,0 +1,249 @@
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ─────────────────────────────────── */
+:root {
+  --bg-main: #F8F9FA;
+  --bg-card: #FFFFFF;
+  --border-color: #E5E7EB;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  --blue-primary: #3B82F6;
+  --blue-dark: #2563EB;
+  --navy: #1E1B4B;
+  --critical: #EF4444;
+  --warning: #F59E0B;
+  --success: #10B981;
+  --sidebar-width: 240px;
+  --header-height: 64px;
+}
+
+/* ─── Base Reset ─────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #b8d4f0;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Typography ──────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+code, kbd, pre, .font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Scrollbar Styling ──────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* ─── Utility Components ──────────────────────────────────────── */
+@layer components {
+
+  /* Glass Card */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/60 shadow-card rounded-2xl;
+  }
+
+  /* Premium Card */
+  .premium-card {
+    @apply bg-white border border-surface-border shadow-card rounded-2xl transition-shadow duration-200;
+  }
+  .premium-card:hover {
+    @apply shadow-card-hover;
+  }
+
+  /* Blue Hero Gradient */
+  .hero-gradient {
+    background: linear-gradient(135deg, #1E1B4B 0%, #312E81 40%, #2563EB 100%);
+  }
+
+  /* Risk score gradient backgrounds */
+  .risk-critical {
+    @apply bg-red-50 border-red-200 text-red-700;
+  }
+  .risk-high {
+    @apply bg-orange-50 border-orange-200 text-orange-700;
+  }
+  .risk-medium {
+    @apply bg-amber-50 border-amber-200 text-amber-700;
+  }
+  .risk-low {
+    @apply bg-emerald-50 border-emerald-200 text-emerald-700;
+  }
+
+  /* Animated Progress Bar */
+  .progress-bar-animated {
+    background: linear-gradient(90deg, #3B82F6, #8B5CF6, #3B82F6);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Sidebar Nav Item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 transition-all duration-150 cursor-pointer;
+  }
+  .nav-item:hover {
+    @apply bg-blue-50 text-blue-600;
+  }
+  .nav-item.active {
+    @apply bg-blue-600 text-white shadow-sm;
+  }
+
+  /* Claim Stat Card */
+  .stat-card {
+    @apply premium-card p-5 flex flex-col gap-1;
+  }
+
+  /* Input field */
+  .field-input {
+    @apply w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-800
+           placeholder-gray-400 outline-none transition-all duration-150
+           focus:border-blue-400 focus:ring-2 focus:ring-blue-100;
+  }
+
+  /* Primary Button */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 
+           text-white text-sm font-semibold rounded-xl transition-all duration-150 
+           shadow-sm hover:shadow-blue-glow cursor-pointer select-none;
+  }
+
+  /* Secondary Button */
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-50 
+           text-gray-700 text-sm font-semibold rounded-xl border border-gray-200
+           transition-all duration-150 cursor-pointer select-none;
+  }
+
+  /* Danger/Black CTA Button */
+  .btn-dark {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 
+           text-white text-sm font-bold rounded-full transition-all duration-150 
+           cursor-pointer select-none;
+  }
+
+  /* Tab styles */
+  .tab-trigger {
+    @apply px-4 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent
+           hover:text-gray-800 hover:border-gray-300 transition-all duration-150;
+  }
+  .tab-trigger[data-state="active"] {
+    @apply text-blue-600 border-blue-600;
+  }
+
+  /* Section Label (small caps above heading) */
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-blue-600;
+  }
+
+  /* Divider */
+  .divider {
+    @apply border-t border-gray-100 my-4;
+  }
+
+  /* Agent orb (spinning during analysis) */
+  .agent-orb {
+    @apply w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm;
+  }
+
+  /* Evidence quote */
+  .evidence-quote {
+    @apply text-xs font-mono bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 
+           text-slate-600 italic leading-relaxed;
+  }
+}
+
+/* ─── Animations ──────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes spin-ring {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* ─── react-pdf canvas override ──────────────────────────────── */
+.react-pdf__Page__canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
+.react-pdf__Page {
+  display: flex;
+  justify-content: center;
+}
+
+/* ─── Print styles ───────────────────────────────────────────── */
+@media print {
+  body { background: white; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+}

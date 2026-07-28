@@ -1,0 +1,71 @@
+Hey team! 🚀 Here is our development plan and GitHub setup so we can work on our 3 laptops in parallel without blocking each other or getting Git merge conflicts.
+
+1. 📁 Repository Folder Structure
+Whoever creates the GitHub repo, let's keep this structure:
+
+text
+
+
+ai-claims-review-agent/
+├── ai_engine/       <-- Member 1 (AI Agents & RAG Pipeline)
+├── backend/         <-- Member 2 (FastAPI, PDF OCR, Database)
+├── frontend/        <-- Member 3 (React + Tailwind UI Dashboard)
+├── .gitignore
+└── README.md
+Since each of us works in our own separate folder, we can push to GitHub without overwriting each other's code!
+
+2. 🌿 Git Branching Setup
+Member 1 (AI/RAG): Work on branch feature/member-1-ai-rag
+Member 2 (Backend): Work on branch feature/member-2-backend
+Member 3 (Frontend): Work on branch feature/member-3-frontend
+3. 📄 Shared API Contract (JSON Format)
+All 3 of our AI assistants will use this exact JSON schema so our frontend, backend, and AI engine plug together automatically:
+
+Request Payload (POST /api/v1/analyze):
+
+json
+
+
+{
+  "claim_id": "CLM-2026-9901",
+  "policy_number": "POL-88321",
+  "claimant_name": "John Doe",
+  "claim_amount": 15500.00,
+  "claim_type": "Auto Collision",
+  "extracted_text": "Claimant states vehicle hit guardrail..."
+}
+Response Payload:
+
+json
+
+
+{
+  "claim_id": "CLM-2026-9901",
+  "overall_risk_score": 78,
+  "risk_level": "HIGH",
+  "fraud_score": 82,
+  "agent_analysis": {
+    "fraud_agent": { "flags": ["Duplicate invoice"], "score": 82 },
+    "medical_agent": { "flags": ["Timeline discrepancy"], "score": 60 },
+    "compliance_agent": { "status": "APPROVED_WITH_CONDITIONS" }
+  },
+  "key_evidence": [
+    "Repair estimate timestamp precedes incident date by 2 days."
+  ],
+  "investigator_questions": [
+    "Can claimant provide verified tow receipts?"
+  ],
+  "final_recommendation": "REFER TO SPECIAL INVESTIGATION UNIT (SIU)"
+}
+4. 🤖 What to Prompt Your AI Assistant On Your Laptop Right Now:
+Member 2 (Backend):
+
+"Build a FastAPI backend in ./backend with routes /api/v1/upload-document (PDF text extraction via PyMuPDF) and /api/v1/analyze (uses a mock JSON response for now conforming to our shared contract)."
+
+Member 3 (Frontend):
+
+"Build a React + Tailwind dashboard in ./frontend with a PDF Drag & Drop dropzone and an interactive Risk Analysis Dashboard that uses local mock JSON matching our shared contract."
+
+Member 1 (AI/RAG - Me):
+
+"Building the ./ai_engine folder with Pinecone + Gemini RAG knowledge base and LangGraph multi-agent decision workflow."
