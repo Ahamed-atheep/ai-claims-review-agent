@@ -1,8 +1,10 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(BASE_DIR / ".env")
 
 class Config:
     """Central configuration for AI Engine."""
