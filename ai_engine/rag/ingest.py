@@ -1,7 +1,12 @@
 import os
 from typing import List, Dict
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.docstore.document import Document
+
+try:
+    from langchain_core.documents import Document
+except Exception:
+    from langchain.schema import Document
+
 from ai_engine.rag.vector_store import get_vector_store
 from ai_engine.utils.logger import logger
 
