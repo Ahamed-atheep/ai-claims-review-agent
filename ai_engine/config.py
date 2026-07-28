@@ -15,7 +15,7 @@ class Config:
     PINECONE_API_KEY: str = os.getenv("PINECONE_API_KEY", "")
     
     # Pinecone Vector DB (Configured for 3072 dimensions)
-    PINECONE_INDEX_NAME: str = os.getenv("PINECONE_INDEX_NAME", "insurance-knowledge-base")
+    PINECONE_INDEX_NAME: str = os.getenv("PINECONE_INDEX_NAME", "claims-rag-index")
     PINECONE_ENVIRONMENT: str = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
     VECTOR_DIMENSION: int = int(os.getenv("VECTOR_DIMENSION", "3072"))
     

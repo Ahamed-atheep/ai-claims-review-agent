@@ -1,0 +1,25 @@
+===================================================================
+APEX INSURANCE GROUP - EVIDENCE VERIFICATION MANUAL (DOMAIN: EVIDENCE)
+===================================================================
+
+SECTION 1: MANDATORY DOCUMENTATION REQUIREMENTS
+1.1 POLICE REPORT MANDATE:
+- A formal police accident report (Form MV-104A or regional equivalent) is STRICTLY MANDATORY for any property damage claim exceeding $3,000.00.
+- Claims submitted without a police report for damage > $3,000 must be flagged for missing mandatory evidence.
+- Single-vehicle collisions involving guardrails, trees, or stationary objects without a police report are high-priority investigation targets.
+
+1.2 TOW RECEIPT TIMELINE MATCHING:
+- Official tow truck operator receipts must be timestamped within 3 hours of the reported accident time.
+- If tow receipt timestamp is missing, pre-dates the accident, or exceeds 6 hours post-incident without weather delay justification, flag as timeline conflict.
+
+1.3 VEHICLE DAMAGE & VIN VERIFICATION:
+- Minimum of 4 high-resolution photo evidence files required: Front, Rear, Left Side, Right Side, and VIN Plate/Door Sticker.
+- Photo metadata (EXIF data) timestamp must align with reported accident date.
+- Scratches or rust on structural impact points indicate pre-existing damage.
+
+SECTION 2: GPS & METEOROLOGICAL CROSS-VERIFICATION
+2.1 GPS LOCATION MATCHING:
+- Claimant mobile device or telematics GPS coordinates must match reported collision location on Highway or intersection.
+
+2.2 WEATHER VERIFICATION:
+- Meteorological records for collision timestamp are verified against claimant statements (e.g., wet pavement vs clear weather records).

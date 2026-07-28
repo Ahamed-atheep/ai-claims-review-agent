@@ -15,7 +15,7 @@ def get_embeddings() -> GoogleGenerativeAIEmbeddings:
     if _EMBEDDINGS_INSTANCE is not None:
         return _EMBEDDINGS_INSTANCE
 
-    model_name = config.EMBEDDING_MODEL or "models/text-embedding-004"
+    model_name = "gemini-embedding-001"
     logger.info(f"Initializing Google Gemini Embeddings (model='{model_name}') ONCE at startup...")
     
     try:

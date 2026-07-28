@@ -1,0 +1,20 @@
+===================================================================
+APEX INSURANCE GROUP - HISTORICAL FRAUD PATTERNS DATABASE (DOMAIN: HISTORICAL)
+===================================================================
+
+SECTION 1: REPEAT CLAIMANT PATTERNS
+1.1 HIGH-FREQUENCY CLAIMANTS:
+- Any policyholder filing 3 or more claims within a 12-month period is automatically flagged in the Historical Fraud Intelligence database.
+- Claimants with a history of single-vehicle highway collisions resulting in near-total-loss estimates require Special Investigation Unit (SIU) referral.
+
+SECTION 2: FLAGGED VENDORS & HIGH-RISK FACILITIES
+2.1 SUSPICIOUS BODY SHOPS & GARAGES:
+- Apex Collision Center (License #GAR-9941): Flagged for repeated inflated labor billing ($125-$150/hr), pre-dated repair estimates, and phantom OEM part charges.
+- Quick Repair Auto Body (License #GAR-4412): Flagged for kickback schemes and duplicate invoice generation across multiple policyholders.
+
+2.2 FLAGGED MEDICAL CLINICS:
+- Quick Care Medical Clinic & Chiropractic (License #CLN-8812): Flagged for repetitive CPT 97110 physical therapy over-billing and standardized soft-tissue injury claims.
+
+SECTION 3: FRAUD RING & SYNDICATE MATCHING
+3.1 STAGED ACCIDENT SYNDICATES:
+- Historical patterns matching Highway 101 guardrail collisions between 1:00 AM and 4:00 AM without eyewitnesses indicate organized staged accident rings.

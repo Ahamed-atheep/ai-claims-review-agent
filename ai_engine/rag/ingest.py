@@ -17,16 +17,21 @@ from ai_engine.utils.logger import logger
 
 KNOWLEDGE_FILES_MAP: Dict[str, str] = {
     "auto_insurance_policy_master.txt": "policy",
+    "auto_policy_apex.txt": "policy",
     "insurance_fraud_indicators_master.txt": "fraud",
+    "fraud_rules_catalog.txt": "fraud",
     "medical_and_auto_repair_benchmarks.txt": "medical",
+    "medical_benchmarks.txt": "medical",
+    "evidence_rules_master.txt": "evidence",
+    "historical_fraud_patterns_master.txt": "historical"
 }
 
 DEFAULT_KNOWLEDGE_DIR = os.path.join(os.path.dirname(__file__), "..", "knowledge_base")
 
 def load_and_tag_documents(knowledge_dir: str = DEFAULT_KNOWLEDGE_DIR) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=600,
-        chunk_overlap=100
+        chunk_size=500,
+        chunk_overlap=80
     )
     documents: List[Document] = []
 
@@ -49,21 +54,7 @@ def load_and_tag_documents(knowledge_dir: str = DEFAULT_KNOWLEDGE_DIR) -> List[D
             for chunk in chunks:
                 chunk.metadata["domain"] = domain
             documents.extend(chunks)
-            logger.info(f"Generated {len(chunks)} chunks for domain='{domain}'")
-
-    synthetic_entries = [
-        Document(
-            page_content="EVIDENCE RULES: Police reports are mandatory for claims over $3,000. Tow receipts must match accident timestamp. Photo evidence of vehicle damage must show VIN number.",
-            metadata={"source": "evidence_rules.txt", "domain": "evidence"}
-        ),
-        Document(
-            page_content="HISTORICAL FRAUD PATTERNS: High repeat fraud identified at Apex Collision Center and Quick Care Clinic. Repeat claimants filing >3 claims in 12 months trigger automatic SIU referral.",
-            metadata={"source": "historical_patterns.txt", "domain": "historical"}
-        )
-    ]
-    for syn_doc in synthetic_entries:
-        chunks = text_splitter.split_documents([syn_doc])
-        documents.extend(chunks)
+            logger.info(f"Generated {len(chunks)} chunks for domain='{domain}' from file '{filename}'")
 
     return documents
 
@@ -78,10 +69,10 @@ def ingest_to_pinecone():
         logger.error("Failed to connect to Pinecone vector store.")
         return False
 
-    logger.info(f"Upserting {len(docs)} domain-tagged chunks into Pinecone...")
+    logger.info(f"Upserting {len(docs)} domain-tagged chunks across all 5 domains into Pinecone...")
     if hasattr(vector_store, "add_documents"):
         vector_store.add_documents(docs)
-    logger.info("Successfully completed ingestion to Pinecone!")
+    logger.info("Successfully completed full knowledge base ingestion to Pinecone!")
     return True
 
 if __name__ == "__main__":
