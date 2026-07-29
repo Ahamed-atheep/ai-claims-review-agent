@@ -1,9 +1,6 @@
 import { useState, useCallback } from 'react'
 import { uploadClaimDocument } from '@/lib/api'
 import { useClaimStore } from '@/store/useClaimStore'
-import { MOCK_UPLOAD_RESPONSE } from '@/lib/mockData'
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 export function useClaimUpload() {
   const [isUploading, setIsUploading] = useState(false)
@@ -24,14 +21,6 @@ export function useClaimUpload() {
     try {
       // Store file reference for the PDF viewer
       setUploadedFile(params.file)
-
-      if (USE_MOCK) {
-        // Simulate upload delay
-        await new Promise<void>((resolve) => setTimeout(resolve, 800))
-        setCurrentClaimId(MOCK_UPLOAD_RESPONSE.claim_id)
-        setIsProcessing(true)
-        return MOCK_UPLOAD_RESPONSE
-      }
 
       // Real upload: multipart/form-data
       const formData = new FormData()

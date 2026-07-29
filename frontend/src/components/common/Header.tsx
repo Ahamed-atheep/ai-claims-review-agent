@@ -2,7 +2,7 @@ import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, FolderOpen, BarChart3, Settings, Shield,
-  Menu, X, ChevronRight, Bell, User, LogOut, FileSearch
+  Menu, X, ChevronRight, Bell, User, FileSearch
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useClaimStore } from '@/store/useClaimStore'
@@ -77,9 +77,6 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigateHome }) =
                 </nav>
 
                 <div className="flex items-center gap-3">
-                  <button className="text-sm text-gray-700 hover:text-gray-900 font-medium px-3 py-1.5 transition-colors">
-                    Sign In
-                  </button>
                   <button 
                     onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-full transition-all duration-150 shadow-lg shadow-blue-600/30 cursor-pointer select-none"

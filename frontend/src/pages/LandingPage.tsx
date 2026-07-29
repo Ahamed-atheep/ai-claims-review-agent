@@ -7,11 +7,8 @@ import {
 import { DropzoneUpload } from '@/components/upload/DropzoneUpload'
 import { ProcessingProgressModal } from '@/components/upload/ProcessingProgressModal'
 import { useClaimStore } from '@/store/useClaimStore'
-import { MOCK_CLAIM_RESPONSE } from '@/lib/mockData'
 import { analyzeByClaimId } from '@/lib/api'
 import { AnimatedCounter } from '@/components/common/AnimatedCounter'
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 interface LandingPageProps {
   onNavigateToDashboard: () => void
@@ -66,21 +63,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
 
   const handleAnalysisComplete = () => {
     setShowModal(false)
-
-    if (USE_MOCK) {
-      // Load mock report data matching exact backend contract
-      const mockReport = {
-        claim_id: MOCK_CLAIM_RESPONSE.claim_id,
-        overall_risk_score: MOCK_CLAIM_RESPONSE.overall_risk_score,
-        risk_level: MOCK_CLAIM_RESPONSE.risk_level,
-        fraud_score: MOCK_CLAIM_RESPONSE.fraud_score,
-        agent_analysis: MOCK_CLAIM_RESPONSE.agent_analysis,
-        key_evidence: MOCK_CLAIM_RESPONSE.key_evidence,
-        investigator_questions: MOCK_CLAIM_RESPONSE.investigator_questions,
-        final_recommendation: MOCK_CLAIM_RESPONSE.final_recommendation,
-      }
-      setReport(mockReport)
-    }
     onNavigateToDashboard()
   }
 
@@ -195,20 +177,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard 
                       Analyze a Claim
                       <ArrowRight size={16} />
                     </button>
-                    {USE_MOCK && (
-                      <button
-                        onClick={() => {
-                          setShowModal(true)
-                          const store = useClaimStore.getState()
-                          store.setCurrentClaimId('CLM-2026-9901')
-                        }}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-full border border-white/20 backdrop-blur-sm transition-all duration-150 cursor-pointer select-none"
-                        id="demo-btn"
-                      >
-                        <Zap size={15} className="text-amber-400" />
-                        Run Demo
-                      </button>
-                    )}
                     {import.meta.env.DEV && (
                       <button
                         onClick={runSeededDemo}

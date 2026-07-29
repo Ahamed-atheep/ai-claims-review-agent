@@ -1,9 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { getSSEStreamUrl } from '@/lib/api'
 import { useClaimStore, type SSEProgressEvent } from '@/store/useClaimStore'
-import { MOCK_SSE_STEPS } from '@/lib/mockData'
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 interface UseSSEStreamOptions {
   claimId: string | null
@@ -30,34 +27,9 @@ export function useSSEStream({ claimId, onComplete, onError }: UseSSEStreamOptio
     }
   }, [])
 
-  // Mock SSE simulation for development
-  const runMockStream = useCallback(async () => {
-    setIsProcessing(true)
-    for (const step of MOCK_SSE_STEPS) {
-      await new Promise<void>((resolve) => setTimeout(resolve, 1200))
-      addProcessingStep(step as SSEProgressEvent)
-      if (step.step === 'COMPLETED') {
-        setTimeout(() => {
-          setIsProcessing(false)
-          onCompleteRef.current?.()
-        }, 600)
-      }
-      if (step.step === 'FAILED') {
-        setIsProcessing(false)
-        onErrorRef.current?.('Processing failed')
-      }
-    }
-  }, [addProcessingStep, setIsProcessing])
-
   useEffect(() => {
     if (!claimId) return
 
-    if (USE_MOCK) {
-      runMockStream()
-      return
-    }
-
-    // Real SSE connection
     const url = getSSEStreamUrl(claimId)
     const es = new EventSource(url)
     eventSourceRef.current = es
@@ -91,7 +63,7 @@ export function useSSEStream({ claimId, onComplete, onError }: UseSSEStreamOptio
     }
 
     return () => stopStream()
-  }, [claimId, runMockStream, addProcessingStep, setIsProcessing, stopStream])
+  }, [claimId, addProcessingStep, setIsProcessing, stopStream])
 
   return { stopStream }
 }

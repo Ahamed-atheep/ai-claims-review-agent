@@ -88,3 +88,24 @@ export async function analyzeByClaimId(claimId: string) {
 export function getSSEStreamUrl(claimId: string): string {
   return `${BASE_URL}/api/v1/claims/${claimId}/stream`
 }
+
+/**
+ * List all claims from the backend
+ * GET /api/v1/claims
+ */
+export async function listClaims(): Promise<{
+  items: Array<{
+    claim_id: string
+    claim_number: string
+    policy_number: string
+    claimant_name: string
+    claim_type: string
+    claimed_amount: number
+    status: string
+    created_at: string
+  }>
+  pagination: { total: number; page: number; page_size: number; total_pages: number }
+}> {
+  const response = await apiClient.get('/api/v1/claims?limit=100&offset=0')
+  return response.data
+}
